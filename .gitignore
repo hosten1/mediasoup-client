@@ -30,7 +30,7 @@
 *.exe
 *.out
 *.app
-
+build*
 /x64
 /.vs
 /UI/logs
@@ -40,4 +40,5 @@ UI/UI.APS
 /Debug
 /Release
 
-/deps/webrtc
+deps/.DS_Store
+deps/webrtc/lib/.DS_Store

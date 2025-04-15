@@ -95,22 +95,24 @@ namespace vi {
         static rtc::scoped_refptr<WindowsCapturerTrackSource> Create() {
             const size_t kWidth = 1280;
             const size_t kHeight = 720;
-			const size_t kFps = 30;
-			std::unique_ptr<VcmCapturer> capturer;
+            const size_t kFps = 30;
+            std::unique_ptr<VcmCapturer> capturer;
             std::unique_ptr<webrtc::VideoCaptureModule::DeviceInfo> info(webrtc::VideoCaptureFactory::CreateDeviceInfo());
-			if (!info) {
-				return nullptr;
-			}
-			int num_devices = info->NumberOfDevices();
-			for (int i = 0; i < num_devices; ++i) {
+            if (!info) {
+                return nullptr;
+            }
+            int num_devices = info->NumberOfDevices();
+            for (int i = 0; i < num_devices; ++i) {
                 capturer = absl::WrapUnique(VcmCapturer::Create(kWidth, kHeight, kFps, i));
-				if (capturer) {
-                    return new rtc::RefCountedObject<WindowsCapturerTrackSource>(std::move(capturer));
-				}
-			}
-
-			return nullptr;
-		}
+                if (capturer) {
+                    // 注意这里，通过 scoped_refptr 包装裸指针
+                    return rtc::scoped_refptr<WindowsCapturerTrackSource>(
+                        new rtc::RefCountedObject<WindowsCapturerTrackSource>(std::move(capturer))
+                    );
+                }
+            }
+            return nullptr;
+        }
 
 	protected:
         explicit WindowsCapturerTrackSource(

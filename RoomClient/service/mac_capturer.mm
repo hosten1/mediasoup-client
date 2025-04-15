@@ -4,7 +4,7 @@
 #import "sdk/objc/components/capturer/RTCCameraVideoCapturer.h"
 #import "sdk/objc/native/api/video_capturer.h"
 #import "sdk/objc/native/src/objc_frame_buffer.h"
-#include "rtc_base/async_invoker.h"
+//#include "rtc_base/async_invoker.h"
 #include "logger/u_logger.h"
 #include "utils/thread_provider.h"
 #import "helpers/RTCDispatcher+Private.h"
@@ -15,18 +15,22 @@
 
 @implementation MacVideoSourceAdapter
 @synthesize capturer = _capturer;
-
 - (void)capturer:(RTC_OBJC_TYPE(RTCVideoCapturer) *)capturer
   didCaptureVideoFrame:(RTC_OBJC_TYPE(RTCVideoFrame) *)frame {
     const int64_t timestamp_us = frame.timeStampNs / rtc::kNumNanosecsPerMicrosec;
-    rtc::scoped_refptr<webrtc::VideoFrameBuffer> buffer =
-            new rtc::RefCountedObject<webrtc::ObjCFrameBuffer>(frame.buffer);
+    // 先创建一个 rtc::scoped_refptr<ObjCFrameBuffer>
+    rtc::scoped_refptr<webrtc::ObjCFrameBuffer> objcBuffer =
+        rtc::scoped_refptr<webrtc::ObjCFrameBuffer>(new rtc::RefCountedObject<webrtc::ObjCFrameBuffer>(frame.buffer));
+    // 然后通过赋值将其转换成基类的 rtc::scoped_refptr<VideoFrameBuffer>
+    rtc::scoped_refptr<webrtc::VideoFrameBuffer> buffer = objcBuffer;
+
     _capturer->OnFrame(webrtc::VideoFrame::Builder()
                        .set_video_frame_buffer(buffer)
                        .set_rotation(webrtc::kVideoRotation_0)
                        .set_timestamp_us(timestamp_us)
                        .build());
 }
+
 
 @end
 

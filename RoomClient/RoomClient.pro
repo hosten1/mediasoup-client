@@ -11,13 +11,18 @@ CONFIG += c++17
 
 DEFINES += WEBRTC_POSIX WEBRTC_MAC ASIO_STANDALONE GL_SILENCE_DEPRECATION
 
+QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.7
+QMAKE_CFLAGS += -mmacosx-version-min=10.7
+QMAKE_CXXFLAGS += -mmacosx-version-min=10.7
+
 INCLUDEPATH += \
     $$PWD/../deps/webrtc/include \
-    $$PWD/../deps/webrtc/include/third_party \
-    $$PWD/../deps/webrtc/include/third_party/abseil-cpp \
-    $$PWD/../deps/webrtc/include/third_party/boringssl/src/include \
-    $$PWD/../deps/webrtc/include/sdk/objc \
-    $$PWD/../deps/webrtc/include/sdk/objc/base \
+    $$PWD/../deps/webrtc/include/webrtc \
+    $$PWD/../deps/webrtc/include/webrtc/third_party \
+    $$PWD/../deps/webrtc/include/webrtc/third_party/abseil-cpp \
+    $$PWD/../deps/webrtc/include/webrtc/third_party/boringssl/src/include \
+    $$PWD/../deps/webrtc/include/webrtc/sdk/objc \
+    $$PWD/../deps/webrtc/include/webrtc/sdk/objc/base \
     $$PWD/../deps/libsdptransform/include \
     $$PWD/../deps/rapidjson/include \
     $$PWD/../deps/spdlog/include \
@@ -27,7 +32,7 @@ INCLUDEPATH += \
 
 #INCLUDEPATH += "$$PWD/../deps/webrtc/Frameworks/WebRTC.xcframework/WebRTC.framework/Headers"
 
-LIBS += -L$$PWD/../deps/webrtc/lib/ -lwebrtc
+LIBS += -L$$PWD/../deps/webrtc/lib/ -lwebrtc -lsdk_combined
 LIBS += -framework AppKit
 
 CONFIG(debug, debug | release) {
