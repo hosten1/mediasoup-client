@@ -89,6 +89,80 @@ if(USE_LIB_MEDIASOUP_CLIENT_SOURCE)
     )
 endif() # 修复：添加缺失的 endif()
 
+# 定义编译选项 是使用 libmediasoupclient 的源码 还是使用编译好的库
+option(USE_LIB_WEBSOCKETPP_SOURCE "Use libmediasoupclient source code" ON)
+
+# 引入 libmediasoupclient 的源码
+if(USE_LIB_WEBSOCKETPP_SOURCE)
+    # Force the script to use FetchContent and not CPM internally to fetch asio
+    # option(ASIO_USE_CPM "Download Asio with CPM instead of FetchContent" OFF)
+    # option(
+    # ASIO_CPM_FETCHCONTENT_COMPAT
+    # "Should asio be declared with FetchContent functions to be compatible. This doesn't not allow CPM cache to work."
+    # ON
+    # )
+
+    # # Download this repository
+    # include(FetchContent)
+    # FetchContent_Declare(
+    # asiocmake
+    # GIT_REPOSITORY "https://github.com/OlivierLDff/asio.cmake"
+    # GIT_TAG "main"
+    # )
+    # FetchContent_MakeAvailable(asiocmake)
+
+    # ...
+
+    # # Link to the created library asio::asio or asio
+    # target_link_libraries(RoomClient PRIVATE asio::asio)
+    # set(LIBWEBRTC_INCLUDE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/deps/webrtc/include/webrtc" CACHE STRING "libwebrtc include path")
+    # set(LIBWEBRTC_BINARY_PATH "" CACHE STRING "libwebrtc binary path")
+    # add_subdirectory(deps/libmediasoupclient)
+    list(APPEND ROOM_CLIENT_SOURCES
+        # deps/asio/asio/src/asio.cpp
+        # deps/asio/asio/src/asio_ssl.cpp
+        deps/websocketpp/websocketpp/client.hpp
+        deps/websocketpp/websocketpp/close.hpp
+        deps/websocketpp/websocketpp/connection_base.hpp
+        deps/websocketpp/websocketpp/connection.hpp
+        deps/websocketpp/websocketpp/endpoint_base.hpp
+        deps/websocketpp/websocketpp/endpoint.hpp
+        deps/websocketpp/websocketpp/error.hpp
+        deps/websocketpp/websocketpp/frame.hpp
+        deps/websocketpp/websocketpp/server.hpp
+        deps/websocketpp/websocketpp/uri.hpp
+        deps/websocketpp/websocketpp/utf8_validator.hpp
+        deps/websocketpp/websocketpp/utilities.hpp
+        deps/websocketpp/websocketpp/version.hpp
+        deps/websocketpp/websocketpp/base64/base64.hpp
+        # deps/websocketpp/websocketpp/common/*.hpp
+        # deps/websocketpp/websocketpp/concurrency/*.hpp
+        # deps/websocketpp/websocketpp/config/*.hpp
+        # deps/websocketpp/websocketpp/extensions/*.hpp
+        # deps/websocketpp/websocketpp/extensions/permessage_deflate/*.hpp
+        # deps/websocketpp/websocketpp/http/*.hpp
+        # deps/websocketpp/websocketpp/http/impl/*.hpp
+        # deps/websocketpp/websocketpp/impl/*.hpp
+        # deps/websocketpp/websocketpp/logger/*.hpp
+        # deps/websocketpp/websocketpp/message_buffer/*.hpp
+        # deps/websocketpp/websocketpp/processors/*.hpp
+        # deps/websocketpp/websocketpp/random/*.hpp
+        # deps/websocketpp/websocketpp/roles/*.hpp
+        # deps/websocketpp/websocketpp/sha1/*.hpp
+        # deps/websocketpp/websocketpp/transport/*.hpp
+        # deps/websocketpp/websocketpp/transport/asio/*.hpp
+        # deps/websocketpp/websocketpp/transport/asio/security/*.hpp
+        # deps/websocketpp/websocketpp/transport/base/*.hpp
+
+        # # deps/websocketpp/websocketpp/transport/debug/*.hpp
+        # deps/websocketpp/websocketpp/transport/iostream/*.hpp
+        # deps/websocketpp/websocketpp/transport/stub/*.hpp
+        # deps/websocketpp/websocketpp/sha1/*.hpp
+        # deps/websocketpp/websocketpp/sha1/*.hpp
+        # deps/websocketpp/tutorials/utility_client
+    )
+endif() # 修复：添加缺失的 endif()
+
 if(MSVC)
     message(STATUS "MSVC CMAKE_CXX_COMPILER_ID: ${CMAKE_CXX_COMPILER_ID}")
 
@@ -112,7 +186,7 @@ option(RAPIDJSON_BUILD_CXX17 "Build rapidjson with C++17" ON)
 add_subdirectory(deps/rapidjson)
 add_subdirectory(deps/spdlog)
 # add_subdirectory(deps/asio)
-add_subdirectory(deps/websocketpp)
+# add_subdirectory(deps/websocketpp)
 
 add_library(RoomClient STATIC ${ROOM_CLIENT_SOURCES})
 
@@ -129,11 +203,10 @@ set(SDPTRANSFORM_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps/libsdptransform/in
 set(WEBRTC_INCLUDE_DIRS
     ${CMAKE_CURRENT_SOURCE_DIR}/deps/webrtc/include/webrtc
     ${CMAKE_CURRENT_SOURCE_DIR}/deps/webrtc/include/webrtc/third_party/abseil-cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/deps/webrtc/include/webrtc/third_party/boringssl/src/includ
+    ${CMAKE_CURRENT_SOURCE_DIR}/deps/webrtc/include/webrtc/third_party/boringssl/src/include
     ${CMAKE_CURRENT_SOURCE_DIR}/deps/webrtc/include/webrtc/third_party
     ${CMAKE_CURRENT_SOURCE_DIR}/deps/webrtc/include/webrtc/sdk/objc
     ${CMAKE_CURRENT_SOURCE_DIR}/deps/webrtc/include/webrtc/sdk/objc/base
-    e
 )
 # set(JSON_INCLUDE_DIR
 #     ${CMAKE_CURRENT_SOURCE_DIR}/deps/webrtc/include/webrtc
@@ -144,7 +217,7 @@ set(WEBRTC_INCLUDE_DIRS
 # 使用 target_include_directories 设置头文件路径
 target_include_directories(RoomClient
     PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}/
+    ${CMAKE_CURRENT_SOURCE_DIR}
     PRIVATE
     ${WEBRTC_INCLUDE_DIRS}
     ${SDPTRANSFORM_INCLUDE_DIR}
