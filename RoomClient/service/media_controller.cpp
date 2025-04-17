@@ -247,7 +247,9 @@ namespace vi
             if (!_capturerSource)
             {
                 std::unique_ptr<MacCapturer> capturer = absl::WrapUnique(MacCapturer::Create(1280, 720, 30, 0));
-                _capturerSource = rtc::make_ref_counted<MacTrackSource>(std::move(capturer), false);
+                // _capturerSource = rtc::scoped_refptr<MacTrackSource>(std::move(capturer), false);
+
+                _capturerSource = std::make_unique<MacTrackSource>(std::move(capturer, false));
             }
 
             DLOG("create capture source");

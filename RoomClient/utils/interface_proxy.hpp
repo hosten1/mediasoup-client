@@ -64,7 +64,7 @@
 ///     auto proxy = MyService2Proxy::create(std::make_shared<MyService2>(), "CORE");
 ///     proxy->func1();
 /// }
-#ifndef BEGIN_PROXY_MAP
+#ifndef MI_BEGIN_PROXY_MAP
 namespace vi
 {
 
@@ -142,43 +142,43 @@ namespace vi
         std::promise<void> _promises;
     };
 
-#define PROXY_STRINGIZE_IMPL(x) #x
+#define MI_PROXY_STRINGIZE_IMPL(x) #x
 
-#define PROXY_STRINGIZE(x) PROXY_STRINGIZE_IMPL(x)
+#define MI_PROXY_STRINGIZE(x) MI_PROXY_STRINGIZE_IMPL(x)
 
-#define PROXY_MAP_BOILERPLATE(c)                     \
-    template <class INTERNAL_CLASS>                  \
-    class c##ProxyWithInternal;                      \
-    typedef c##ProxyWithInternal<c> c##Proxy;        \
-    template <class INTERNAL_CLASS>                  \
-    class c##ProxyWithInternal : public c            \
-    {                                                \
-    protected:                                       \
-        typedef c C;                                 \
-        const char *className_ = PROXY_STRINGIZE(c); \
-                                                     \
-    public:                                          \
+#define MI_PROXY_MAP_BOILERPLATE(c)                     \
+    template <class INTERNAL_CLASS>                     \
+    class c##ProxyWithInternal;                         \
+    typedef c##ProxyWithInternal<c> c##Proxy;           \
+    template <class INTERNAL_CLASS>                     \
+    class c##ProxyWithInternal : public c               \
+    {                                                   \
+    protected:                                          \
+        typedef c C;                                    \
+        const char *className_ = MI_PROXY_STRINGIZE(c); \
+                                                        \
+    public:                                             \
         std::shared_ptr<INTERNAL_CLASS> internal() { return _c; }
 
-#define PROXY_MAP_BOILERPLATE_INTERFACE(c, interface) \
-    template <class INTERNAL_CLASS>                   \
-    class c##ProxyWithInternal;                       \
-    typedef c##ProxyWithInternal<interface> c##Proxy; \
-    template <class INTERNAL_CLASS>                   \
-    class c##ProxyWithInternal : public interface     \
-    {                                                 \
-    protected:                                        \
-        typedef interface C;                          \
-        const char *className_ = PROXY_STRINGIZE(c);  \
-                                                      \
-    public:                                           \
+#define MI_PROXY_MAP_BOILERPLATE_INTERFACE(c, interface) \
+    template <class INTERNAL_CLASS>                      \
+    class c##ProxyWithInternal;                          \
+    typedef c##ProxyWithInternal<interface> c##Proxy;    \
+    template <class INTERNAL_CLASS>                      \
+    class c##ProxyWithInternal : public interface        \
+    {                                                    \
+    protected:                                           \
+        typedef interface C;                             \
+        const char *className_ = MI_PROXY_STRINGIZE(c);  \
+                                                         \
+    public:                                              \
         std::shared_ptr<INTERNAL_CLASS> internal() { return _c; }
 
-#define END_PROXY_MAP() \
-    }                   \
+#define MI_END_PROXY_MAP() \
+    }                      \
     ;
 
-#define CALL_THREAD_PROXY_MAP_BOILERPLATE(c)                \
+#define MI_CALL_THREAD_PROXY_MAP_BOILERPLATE(c)             \
 public:                                                     \
     c##ProxyWithInternal(std::shared_ptr<INTERNAL_CLASS> c, \
                          const std::string &threadName)     \
@@ -187,7 +187,7 @@ public:                                                     \
 private:                                                    \
     const std::string _threadName;
 
-#define SHARED_PROXY_MAP_BOILERPLATE(c)                    \
+#define MI_SHARED_PROXY_MAP_BOILERPLATE(c)                 \
 public:                                                    \
     ~c##ProxyWithInternal()                                \
     {                                                      \
@@ -200,10 +200,10 @@ private:                                                   \
     void destroyInternal() { _c = nullptr; }               \
     std::shared_ptr<INTERNAL_CLASS> _c;
 
-#define BEGIN_PROXY_MAP(c)                                                \
-    PROXY_MAP_BOILERPLATE(c)                                              \
-    CALL_THREAD_PROXY_MAP_BOILERPLATE(c)                                  \
-    SHARED_PROXY_MAP_BOILERPLATE(c)                                       \
+#define MI_BEGIN_PROXY_MAP(c)                                             \
+    MI_PROXY_MAP_BOILERPLATE(c)                                           \
+    MI_CALL_THREAD_PROXY_MAP_BOILERPLATE(c)                               \
+    MI_SHARED_PROXY_MAP_BOILERPLATE(c)                                    \
 public:                                                                   \
     static std::shared_ptr<c##ProxyWithInternal> create(                  \
         std::shared_ptr<INTERNAL_CLASS> c, const std::string &threadName) \
@@ -211,10 +211,10 @@ public:                                                                   \
         return std::make_shared<c##ProxyWithInternal>(c, threadName);     \
     }
 
-#define BEGIN_PROXY_MAP_INTERFACE(c, interface)                           \
-    PROXY_MAP_BOILERPLATE_INTERFACE(c, interface)                         \
-    CALL_THREAD_PROXY_MAP_BOILERPLATE(c)                                  \
-    SHARED_PROXY_MAP_BOILERPLATE(c)                                       \
+#define MI_BEGIN_PROXY_MAP_INTERFACE(c, interface)                        \
+    MI_PROXY_MAP_BOILERPLATE_INTERFACE(c, interface)                      \
+    MI_CALL_THREAD_PROXY_MAP_BOILERPLATE(c)                               \
+    MI_SHARED_PROXY_MAP_BOILERPLATE(c)                                    \
 public:                                                                   \
     static std::shared_ptr<c##ProxyWithInternal> create(                  \
         std::shared_ptr<INTERNAL_CLASS> c, const std::string &threadName) \
@@ -222,21 +222,21 @@ public:                                                                   \
         return std::make_shared<c##ProxyWithInternal>(c, threadName);     \
     }
 
-#define PROXY_METHOD0(r, method)                     \
+#define MI_PROXY_METHOD0(r, method)                  \
     r method() override                              \
     {                                                \
         MethodCall<C, r> call(_c.get(), &C::method); \
         return call.marshal(_threadName);            \
     }
 
-#define PROXY_METHOD1(r, method, t1)                                    \
+#define MI_PROXY_METHOD1(r, method, t1)                                 \
     r method(t1 a1) override                                            \
     {                                                                   \
         MethodCall<C, r, t1> call(_c.get(), &C::method, std::move(a1)); \
         return call.marshal(_threadName);                               \
     }
 
-#define PROXY_METHOD2(r, method, t1, t2)                                   \
+#define MI_PROXY_METHOD2(r, method, t1, t2)                                \
     r method(t1 a1, t2 a2) override                                        \
     {                                                                      \
         MethodCall<C, r, t1, t2> call(_c.get(), &C::method, std::move(a1), \
@@ -244,7 +244,7 @@ public:                                                                   \
         return call.marshal(_threadName);                                  \
     }
 
-#define PROXY_METHOD3(r, method, t1, t2, t3)                                   \
+#define MI_PROXY_METHOD3(r, method, t1, t2, t3)                                \
     r method(t1 a1, t2 a2, t3 a3) override                                     \
     {                                                                          \
         MethodCall<C, r, t1, t2, t3> call(_c.get(), &C::method, std::move(a1), \
@@ -252,7 +252,7 @@ public:                                                                   \
         return call.marshal(_threadName);                                      \
     }
 
-#define PROXY_METHOD4(r, method, t1, t2, t3, t4)                                   \
+#define MI_PROXY_METHOD4(r, method, t1, t2, t3, t4)                                \
     r method(t1 a1, t2 a2, t3 a3, t4 a4) override                                  \
     {                                                                              \
         MethodCall<C, r, t1, t2, t3, t4> call(_c.get(), &C::method, std::move(a1), \
@@ -261,7 +261,7 @@ public:                                                                   \
         return call.marshal(_threadName);                                          \
     }
 
-#define PROXY_METHOD5(r, method, t1, t2, t3, t4, t5)                                   \
+#define MI_PROXY_METHOD5(r, method, t1, t2, t3, t4, t5)                                \
     r method(t1 a1, t2 a2, t3 a3, t4 a4, t5 a5) override                               \
     {                                                                                  \
         MethodCall<C, r, t1, t2, t3, t4, t5> call(_c.get(), &C::method, std::move(a1), \
@@ -271,4 +271,4 @@ public:                                                                   \
     }
 
 }
-#endif // !BEGIN_PROXY_MAP
+#endif // !MI_BEGIN_PROXY_MAP

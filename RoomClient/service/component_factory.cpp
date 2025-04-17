@@ -27,7 +27,7 @@ void ComponentFactory::init()
 
     if (!_roomClient) {
         auto RoomClientImpl = std::make_shared<RoomClient>(weak_from_this());
-        _roomClient = RoomClientProxy::create(RoomClientImpl, "mediasoup-client");
+        _roomClient = IRoomClientProxy::create(RoomClientImpl, "mediasoup-client");
         _roomClient->init();
     }
 }

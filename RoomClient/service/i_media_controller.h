@@ -1,7 +1,7 @@
 #pragma once
 
 #include <memory>
-#include "api/proxy.h"
+#include "utils/interface_proxy.hpp"
 
 namespace vi
 {
@@ -38,18 +38,18 @@ namespace vi
         virtual bool isAudioMuted(const std::string &id) = 0;
     };
 
-    BEGIN_PROXY_MAP(MediaController)
-    PROXY_METHOD0(void, init)
-    PROXY_METHOD0(void, destroy)
-    PROXY_METHOD1(void, addObserver, std::shared_ptr<IMediaControllerObserver>)
-    PROXY_METHOD1(void, removeObserver, std::shared_ptr<IMediaControllerObserver>)
-    PROXY_METHOD1(void, enableAudio, bool)
-    PROXY_METHOD0(bool, isAudioEnabled)
-    PROXY_METHOD1(void, muteAudio, bool)
-    PROXY_METHOD0(bool, isAudioMuted)
-    PROXY_METHOD1(void, enableVideo, bool)
-    PROXY_METHOD0(bool, isVideoEnabled)
-    PROXY_METHOD2(void, muteAudio, const std::string &, bool)
-    PROXY_METHOD1(bool, isAudioMuted, const std::string &)
-    END_PROXY_MAP()
+    MI_BEGIN_PROXY_MAP(IMediaController)
+    MI_PROXY_METHOD0(void, init)
+    MI_PROXY_METHOD0(void, destroy)
+    MI_PROXY_METHOD1(void, addObserver, std::shared_ptr<IMediaControllerObserver>)
+    MI_PROXY_METHOD1(void, removeObserver, std::shared_ptr<IMediaControllerObserver>)
+    MI_PROXY_METHOD1(void, enableAudio, bool)
+    MI_PROXY_METHOD0(bool, isAudioEnabled)
+    MI_PROXY_METHOD1(void, muteAudio, bool)
+    MI_PROXY_METHOD0(bool, isAudioMuted)
+    MI_PROXY_METHOD1(void, enableVideo, bool)
+    MI_PROXY_METHOD0(bool, isVideoEnabled)
+    MI_PROXY_METHOD2(void, muteAudio, const std::string &, bool)
+    MI_PROXY_METHOD1(bool, isAudioMuted, const std::string &)
+    MI_END_PROXY_MAP()
 }

@@ -65,7 +65,7 @@ namespace vi
         if (!_mediaController.lock())
         {
             auto mediaController = std::make_shared<MediaController>(_mediasoupApi, _sendTransport, _recvTransport, _peerConnectionFactory, _options);
-            _mediaControllerProxy = MediaControllerProxy::create(mediaController, "mediasoup-client");
+            _mediaControllerProxy = IMediaControllerProxy::create(mediaController, "mediasoup-client");
             _mediaControllerProxy->init();
             _mediaController = mediaController;
             _signalingClient->addObserver(mediaController);
@@ -74,7 +74,7 @@ namespace vi
         if (!_participantController.lock())
         {
             auto participantController = std::make_shared<ParticipantController>();
-            _participantControllerProxy = ParticipantControllerProxy::create(participantController, "mediasoup-client");
+            _participantControllerProxy = IParticipantControllerProxy::create(participantController, "mediasoup-client");
             _participantControllerProxy->init();
             _participantController = participantController;
             _signalingClient->addObserver(participantController);

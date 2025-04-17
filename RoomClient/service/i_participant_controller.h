@@ -3,7 +3,7 @@
 #include <string>
 #include <memory>
 #include <unordered_map>
-#include "api/proxy.h"
+#include "utils/interface_proxy.hpp"
 
 namespace vi
 {
@@ -31,12 +31,12 @@ namespace vi
         virtual std::shared_ptr<std::unordered_map<std::string, std::shared_ptr<IParticipant>>> getParticipants() = 0;
     };
 
-    BEGIN_PROXY_MAP(ParticipantController)
-    PROXY_METHOD0(void, init)
-    PROXY_METHOD0(void, destroy)
-    PROXY_METHOD1(void, addObserver, std::shared_ptr<IParticipantControllerObserver>)
-    PROXY_METHOD1(void, removeObserver, std::shared_ptr<IParticipantControllerObserver>)
-    PROXY_METHOD1(std::shared_ptr<IParticipant>, getParticipant, const std::string &)
-    PROXY_METHOD0(ParticipantMap, getParticipants)
-    END_PROXY_MAP()
+    MI_BEGIN_PROXY_MAP(IParticipantController)
+    MI_PROXY_METHOD0(void, init)
+    MI_PROXY_METHOD0(void, destroy)
+    MI_PROXY_METHOD1(void, addObserver, std::shared_ptr<IParticipantControllerObserver>)
+    MI_PROXY_METHOD1(void, removeObserver, std::shared_ptr<IParticipantControllerObserver>)
+    MI_PROXY_METHOD1(std::shared_ptr<IParticipant>, getParticipant, const std::string &)
+    MI_PROXY_METHOD0(ParticipantMap, getParticipants)
+    MI_END_PROXY_MAP()
 }
