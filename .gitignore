@@ -30,6 +30,7 @@
 *.exe
 *.out
 *.app
+._*
 
 /x64
 /.vs
@@ -41,3 +42,5 @@ UI/UI.APS
 /Release
 
 /deps/webrtc
+.DS_Store
+*build-*
