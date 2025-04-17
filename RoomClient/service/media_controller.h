@@ -154,7 +154,7 @@ namespace vi
 
         std::shared_ptr<mediasoupclient::Producer> _micProducer;
         std::shared_ptr<mediasoupclient::Producer> _camProducer;
-        std::shared_ptr<MacTrackSource> _capturerSource;
+        rtc::scoped_refptr<MacTrackSource> _capturerSource;
 
         // key: consumer id
         std::unordered_map<std::string, std::shared_ptr<mediasoupclient::Consumer>> _consumerMap;

@@ -1,4 +1,5 @@
 #include "media_controller.h"
+#include <utility> // 添加在文件顶部
 #include "Transport.hpp"
 #include "api/peer_connection_interface.h"
 #include "api/rtp_parameters.h"
@@ -249,7 +250,7 @@ namespace vi
                 std::unique_ptr<MacCapturer> capturer = absl::WrapUnique(MacCapturer::Create(1280, 720, 30, 0));
                 // _capturerSource = rtc::scoped_refptr<MacTrackSource>(std::move(capturer), false);
 
-                _capturerSource = std::make_unique<MacTrackSource>(std::move(capturer, false));
+                _capturerSource = MacTrackSource::Create(std::move(capturer), false);
             }
 
             DLOG("create capture source");

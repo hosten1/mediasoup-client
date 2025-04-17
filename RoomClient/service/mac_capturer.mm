@@ -73,13 +73,6 @@ MacCapturer::MacCapturer(size_t width,
     [capturer startCaptureWithDevice:device format:format fps:target_fps];
 }
 
-MacCapturer *MacCapturer::Create(size_t width,
-                                 size_t height,
-                                 size_t target_fps,
-                                 size_t capture_device_index) {
-    return new MacCapturer(width, height, target_fps, capture_device_index);
-}
-
 void MacCapturer::Destroy() {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-variable"
