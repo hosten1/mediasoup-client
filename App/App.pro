@@ -12,13 +12,19 @@ DEFINES += WEBRTC_POSIX WEBRTC_MAC ASIO_STANDALONE GL_SILENCE_DEPRECATION
 # You can make your code fail to compile if it uses deprecated APIs.
 # In order to do so, uncomment the following line.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
+QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.7
+QMAKE_CFLAGS += -mmacosx-version-min=10.7
+QMAKE_CXXFLAGS += -mmacosx-version-min=10.7
+
 
 INCLUDEPATH += $$PWD/../RoomClient \
     $$PWD/../RoomClient/client/include \
-    $$PWD/../deps/webrtc/include \
-    $$PWD/../deps/webrtc/include/third_party \
-    $$PWD/../deps/webrtc/include/third_party/abseil-cpp \
-    $$PWD/../deps/webrtc/include/third_party/boringssl/src/include \
+    $$PWD/../deps/webrtc/include/webrtc \
+    $$PWD/../deps/webrtc/include/webrtc/third_party \
+    $$PWD/../deps/webrtc/include/webrtc/third_party/abseil-cpp \
+    $$PWD/../deps/webrtc/include/webrtc/third_party/boringssl/src/include \
+    $$PWD/../deps/webrtc/include/webrtc/sdk/objc \
+    $$PWD/../deps/webrtc/include/webrtc/sdk/objc/base \
     $$PWD/../deps/libsdptransform/include \
     $$PWD/../deps/spdlog/include \
     $$PWD/../deps/rapidjson/include \

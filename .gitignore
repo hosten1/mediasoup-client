@@ -44,3 +44,4 @@ UI/UI.APS
 /deps/webrtc
 .DS_Store
 *build-*
+RoomClient/build/*
