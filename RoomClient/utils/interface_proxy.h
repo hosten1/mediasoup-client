@@ -1,4 +1,4 @@
-
+// interface_proxy.h
 #ifndef ROOMCLIENT_UTILS_INTERFACE_PROXY_H_
 #define ROOMCLIENT_UTILS_INTERFACE_PROXY_H_
 
@@ -65,6 +65,7 @@
 ///     auto proxy = MyService2Proxy::create(std::make_shared<MyService2>(), "CORE");
 ///     proxy->func1();
 /// }
+
 #ifndef MI_BEGIN_PROXY_MAP
 namespace vi
 {
@@ -106,29 +107,7 @@ namespace vi
         {
         }
 
-        R marshal(const std::string &name)
-        {
-            const auto task = [&]()
-            {
-                this->invoke(std::index_sequence_for<Args...>());
-                _promises.set_value();
-            };
-
-            rtc::Thread *thread = TMgr->thread(name);
-            assert(thread);
-            if (thread->IsCurrent())
-            {
-                task();
-            }
-            else
-            {
-                thread->PostTask(RTC_FROM_HERE, task);
-                std::future<void> future = _promises.get_future();
-                future.get();
-            }
-
-            return _result.get();
-        }
+        R marshal(const std::string &name);
 
     private:
         template <size_t... Is>

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <memory>
-#include "utils/interface_proxy.hpp"
+#include "utils/interface_proxy.h"
 
 namespace vi
 {

@@ -3,7 +3,7 @@
 #include <memory>
 #include <string>
 #include "i_room_client_observer.h"
-#include "utils/interface_proxy.hpp"
+#include "utils/interface_proxy.h"
 #include "options.h"
 
 namespace vi

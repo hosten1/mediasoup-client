@@ -3,7 +3,7 @@
 #include <string>
 #include <memory>
 #include <unordered_map>
-#include "utils/interface_proxy.hpp"
+#include "utils/interface_proxy.h"
 
 namespace vi
 {

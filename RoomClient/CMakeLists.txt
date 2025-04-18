@@ -49,6 +49,7 @@ set(ROOM_CLIENT_SOURCES
     utils/string_utils.cpp
     utils/task_scheduler.cpp
     utils/thread_provider.cpp
+    utils/interface_proxy.cpp
     websocket/connection_metadata.cpp
     websocket/websocket_endpoint.cpp
     websocket/websocket_transport.cpp

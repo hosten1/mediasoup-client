@@ -144,7 +144,7 @@ HEADERS += \
     service/windows_capture.h \
     utils/i_notification.h \
     utils/i_observer.hpp \
-    utils/interface_proxy.hpp \
+    utils/interface_proxy.h \
     utils/notification_center.hpp \
     utils/notification_keys.hpp \
     utils/notifications.hpp \

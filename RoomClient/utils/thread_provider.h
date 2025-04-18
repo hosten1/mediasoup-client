@@ -12,17 +12,19 @@
 #ifndef ROOMCLIENT_UTILS_THREAD_PROVIDER_H_
 #define ROOMCLIENT_UTILS_THREAD_PROVIDER_H_
 #include <memory>
-#include <unordered_map>
 #include <mutex>
 #include <atomic>
 #include <string>
 #include <list>
-#include "rtc_base/thread.h"
 #include "singleton.h"
 
+namespace rtc
+{
+	class Thread;
+}
 namespace vi
 {
-
+	class ThreadProviderImpl; // 声明实现类
 	class ThreadProvider : public vi::Singleton<ThreadProvider>
 	{
 	public:
@@ -49,15 +51,7 @@ namespace vi
 		void stopAll();
 
 	private:
-		std::unordered_map<std::string, std::shared_ptr<rtc::Thread>> _threadsMap;
-
-		std::mutex _mutex;
-
-		rtc::Thread *_mainThread = nullptr;
-
-		std::atomic_bool _inited;
-
-		std::atomic_bool _destroy;
+		std::unique_ptr<ThreadProviderImpl> _impl; // 指向实现的指针
 	};
 }
 

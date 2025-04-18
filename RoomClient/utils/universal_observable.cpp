@@ -1,5 +1,6 @@
 #include "utils/universal_observable.h" // 确保路径正确
-#include "thread_provider.h"            // 在实现文件中包含完整头文件
+#include "thread_provider.h"
+#include "rtc_base/thread.h" // 在实现文件中包含完整头文件
 
 namespace vi
 {
