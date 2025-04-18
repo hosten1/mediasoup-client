@@ -5,6 +5,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 CONFIG += c++17
 
 DEFINES += WEBRTC_POSIX WEBRTC_MAC ASIO_STANDALONE GL_SILENCE_DEPRECATION
+#QT_NO_KEYWORDS
 
 #QMAKE_INFO_PLIST +=  $${TARGET}/Info.plist
 #QMAKE_POST_LINK += sed -i -e "s/@VERSION@/$$VERSION/g" "../Debug/$${TARGET}.app/Contents/Info.plist";
@@ -15,7 +16,8 @@ DEFINES += WEBRTC_POSIX WEBRTC_MAC ASIO_STANDALONE GL_SILENCE_DEPRECATION
 QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.7
 QMAKE_CFLAGS += -mmacosx-version-min=10.7
 QMAKE_CXXFLAGS += -mmacosx-version-min=10.7
-
+#在 Qt 项目里遇到第三方库（比如 sigslot）也用到 emit、signals、slots 这些名字时，就会和 Qt 的 moc 关键字冲突，报出类似：
+#CONFIG += no_keywords
 
 INCLUDEPATH += $$PWD/../RoomClient \
     $$PWD/../RoomClient/client/include \
@@ -40,6 +42,8 @@ mac {
     LIBS += -framework AudioToolbox -framework CoreAudio -framework AVFoundation -framework CoreMedia -framework CoreVideo
     LIBS += -framework CoreGraphics \
             -framework ApplicationServices
+    QMAKE_CXXFLAGS += -std=c++17 -stdlib=libc++
+    QMAKE_LFLAGS  += -stdlib=libc++
 }
 
 

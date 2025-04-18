@@ -5,7 +5,7 @@
 #include <QMainWindow>
 #include "service/mediasoup_api.h"
 #include "service/i_room_client_observer.h"
-#include "service/i_media_controller.h"
+//#include "service/i_media_controller.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }

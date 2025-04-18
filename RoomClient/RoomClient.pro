@@ -156,7 +156,7 @@ HEADERS += \
     utils/string_utils.h \
     utils/task_scheduler.h \
     utils/thread_provider.h \
-    utils/universal_observable.h \
+    utils/universal_observable.hpp \
     websocket/connection_metadata.h \
     websocket/i_connection_observer.h \
     websocket/i_transport.h \

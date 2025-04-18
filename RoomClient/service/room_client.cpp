@@ -24,7 +24,7 @@
 #include "Device.hpp"
 #include "mediasoupclient.hpp"
 #include "i_signaling_observer.h"
-#include "utils/universal_observable.h"
+#include "utils/universal_observable.hpp"
 
 namespace
 {

@@ -251,6 +251,7 @@ if(APPLE)
         WEBRTC_MAC
         ASIO_STANDALONE
         GL_SILENCE_DEPRECATION
+        QT_NO_KEYWORDS
     )
 elseif(WIN32)
     target_compile_definitions(RoomClient PRIVATE

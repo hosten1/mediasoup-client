@@ -13,7 +13,7 @@
 #include "i_transport.h"
 #include "i_connection_observer.h"
 #include "websocket_endpoint.h"
-#include "utils/universal_observable.h"
+#include "utils/universal_observable.hpp"
 
 namespace vi
 {

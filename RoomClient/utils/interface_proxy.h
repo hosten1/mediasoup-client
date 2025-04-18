@@ -8,6 +8,10 @@
 #include <type_traits>
 #include <utility>
 #include <future>
+#pragma push_macro("emit")
+#undef emit
+#include "rtc_base/thread.h"
+#pragma pop_macro("emit")
 #include "utils/thread_provider.h"
 
 /// Example usage 1:
@@ -107,7 +111,29 @@ namespace vi
         {
         }
 
-        R marshal(const std::string &name);
+        R marshal(const std::string &name)
+        {
+            const auto task = [&]()
+            {
+                this->invoke(std::index_sequence_for<Args...>());
+                _promises.set_value();
+            };
+
+            rtc::Thread *thread = TMgr->thread(name);
+            assert(thread);
+            if (thread->IsCurrent())
+            {
+                task();
+            }
+            else
+            {
+                thread->PostTask(RTC_FROM_HERE, task);
+                std::future<void> future = _promises.get_future();
+                future.get();
+            }
+
+            return _result.get();
+        }
 
     private:
         template <size_t... Is>
@@ -249,7 +275,6 @@ public:                                                                   \
                                                   std::move(a4), std::move(a5));       \
         return call.marshal(_threadName);                                              \
     }
-
 }
 #endif // !MI_BEGIN_PROXY_MAP
 #endif // !ROOMCLIENT_UTILS_INTERFACE_PROXY_H_
