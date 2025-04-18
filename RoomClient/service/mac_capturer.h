@@ -8,7 +8,6 @@
 #include "pc/video_track_source.h"
 #include "modules/video_capture/video_capture_factory.h"
 #include "modules/video_capture/video_capture.h"
-#include "rtc_base/thread.h"
 #include "base_video_capturer.h"
 #include "logger/u_logger.h"
 

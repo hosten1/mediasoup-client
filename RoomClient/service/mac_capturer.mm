@@ -8,6 +8,8 @@
 #include "logger/u_logger.h"
 #include "utils/thread_provider.h"
 #import "helpers/RTCDispatcher+Private.h"
+#include "rtc_base/thread.h"
+
 
 @interface MacVideoSourceAdapter : NSObject <RTC_OBJC_TYPE (RTCVideoCapturerDelegate)>
   @property(nonatomic) vi::MacCapturer *capturer;

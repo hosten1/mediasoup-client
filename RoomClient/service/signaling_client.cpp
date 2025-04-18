@@ -6,6 +6,7 @@
 #include "websocket/websocket_request.h"
 #include "websocket/websocket_transport.h"
 #include "utils/thread_provider.h"
+#include "rtc_base/thread.h"
 
 namespace vi
 {

@@ -5,38 +5,40 @@
 #include "i_component_factory.h"
 #include "i_service.hpp"
 
-namespace vi {
-
-class ThreadProvider;
-class ComponentFactory : public IComponentFactory, public std::enable_shared_from_this<ComponentFactory>
+namespace vi
 {
-public:
-    ComponentFactory();
 
-    ~ComponentFactory();
+    class ThreadProvider;
+    class ComponentFactory : public IComponentFactory, public std::enable_shared_from_this<ComponentFactory>
+    {
+    public:
+        ComponentFactory();
 
-    void init() override;
+        ~ComponentFactory();
+        void init() override;
 
-    void destroy() override;
+        void destroy() override;
 
-    std::shared_ptr<IServiceFactory> getServiceFactory() override;
+        std::shared_ptr<IServiceFactory> getServiceFactory() override;
 
-    std::shared_ptr<IRoomClient> getRoomClient() override;
+        std::shared_ptr<IRoomClient> getRoomClient() override;
 
-private:
-    ComponentFactory(ComponentFactory&&) = delete;
+        static std::string initLibMediasoup();
+        static void CleanupLibMediasoup();
 
-    ComponentFactory(const ComponentFactory&) = delete;
+    private:
+        ComponentFactory(ComponentFactory &&) = delete;
 
-    const ComponentFactory& operator=(const ComponentFactory&) = delete;
+        ComponentFactory(const ComponentFactory &) = delete;
 
-private:
-    std::shared_ptr<ThreadProvider> _threadProvider;
+        const ComponentFactory &operator=(const ComponentFactory &) = delete;
 
-    std::shared_ptr<IServiceFactory> _serviceFactory;
+    private:
+        std::shared_ptr<ThreadProvider> _threadProvider;
 
-    std::shared_ptr<IRoomClient> _roomClient;
-};
+        std::shared_ptr<IServiceFactory> _serviceFactory;
+
+        std::shared_ptr<IRoomClient> _roomClient;
+    };
 
 }
-

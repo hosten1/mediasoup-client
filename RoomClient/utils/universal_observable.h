@@ -12,10 +12,11 @@
 #include <type_traits>
 #include <list>
 #include <algorithm>
+#include <string>
 #include "absl/types/any.h"
 #include "absl/types/optional.h"
 #include "rtc_base/deprecated/recursive_critical_section.h"
-#include "rtc_base/thread.h"
+// #include "rtc_base/thread.h"
 
 namespace vi
 {

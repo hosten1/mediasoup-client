@@ -25,7 +25,9 @@ INCLUDEPATH += $$PWD/../RoomClient \
     $$PWD/../RoomClient/deps/spdlog/include \
     $$PWD/../RoomClient/deps/rapidjson/include \
     $$PWD/../RoomClient/deps/asio/asio/include \
-#    $$PWD/../deps/libmediasoupclient/include \
+    $$PWD/../RoomClient/deps/rapidjson/include \
+    $$PWD/../RoomClient/deps/libmediasoupclient/include \
+    $$PWD/../RoomClient/deps/libsdptransform/include/json.hpp
     /usr/local/Cellar/glew/2.2.0_1/include
 
 #LIBS += -L$$PWD/../deps/webrtc/lib/ -lwebrtc

@@ -1,33 +1,31 @@
 #include "mainwindow.h"
 #include <QMetaType>
 #include <QApplication>
-#include "mediasoupclient.hpp"
 #include "logger/u_logger.h"
 #include "app_delegate.h"
 #include "service/i_room_client_observer.h"
+#include "service/component_factory.h"
 #include "api/media_stream_interface.h"
-#include "rtc_base/physical_socket_server.h"
+// #include "rtc_base/physical_socket_server.h"
 #include <QOpenGLFunctions>
 
 static void registerMetaTypes()
 {
     qRegisterMetaType<vi::RoomState>("vi::RoomState");
-    qRegisterMetaType<webrtc::MediaStreamTrackInterface*>("webrtc::MediaStreamTrackInterface* track");
-    qRegisterMetaType<const webrtc::VideoFrame&>("const webrtc::VideoFrame&");
+    qRegisterMetaType<webrtc::MediaStreamTrackInterface *>("webrtc::MediaStreamTrackInterface* track");
+    qRegisterMetaType<const webrtc::VideoFrame &>("const webrtc::VideoFrame&");
 }
 
 int main(int argc, char *argv[])
 {
     registerMetaTypes();
 
-    rtc::PhysicalSocketServer ss;
-    rtc::AutoSocketServerThread main_thread(&ss);
+    //    rtc::PhysicalSocketServer ss;
+    //    rtc::AutoSocketServerThread main_thread(&ss);
 
     vi::ULogger::init();
-    AppDelegate::sharedInstance()->init();
-    mediasoupclient::Initialize();
-
-    DLOG("mediasoupclient version: {}", mediasoupclient::Version().c_str());
+    AppDSI->init();
+    vi::ComponentFactory::initLibMediasoup();
 
     QApplication a(argc, argv);
 
@@ -41,10 +39,10 @@ int main(int argc, char *argv[])
     MainWindow w;
     w.init();
     w.show();
-    int ret =  a.exec();
+    int ret = a.exec();
 
-    mediasoupclient::Cleanup();
-    AppDelegate::sharedInstance()->destroy();
+    vi::ComponentFactory::CleanupLibMediasoup();
+    AppDSI->destroy();
     vi::ULogger::destroy();
 
     return ret;

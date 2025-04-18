@@ -3,29 +3,29 @@
 #include <memory>
 #include "utils/singleton.h"
 
-namespace vi {
+namespace vi
+{
     class IComponentFactory;
 }
 
 class AppDelegate : public vi::Singleton<AppDelegate>
 {
 public:
-    ~AppDelegate();
-
     void init();
 
     void destroy();
 
     std::shared_ptr<vi::IComponentFactory> getComponentFactory();
 
-private:
-    AppDelegate();
 
-    AppDelegate(AppDelegate&&) = delete;
+    AppDelegate(); // 私有构造函数
+    ~AppDelegate();
 
-    AppDelegate(const AppDelegate&) = delete;
+    AppDelegate(AppDelegate &&) = delete;
 
-    AppDelegate& operator=(const AppDelegate&) = delete;
+    AppDelegate(const AppDelegate &) = delete;
+
+    AppDelegate &operator=(const AppDelegate &) = delete;
 
 private:
     friend class vi::Singleton<AppDelegate>;
