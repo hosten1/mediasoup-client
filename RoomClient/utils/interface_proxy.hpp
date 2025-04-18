@@ -1,5 +1,6 @@
 
-#pragma once
+#ifndef ROOMCLIENT_UTILS_INTERFACE_PROXY_H_
+#define ROOMCLIENT_UTILS_INTERFACE_PROXY_H_
 
 #include <memory>
 #include <string>
@@ -272,3 +273,4 @@ public:                                                                   \
 
 }
 #endif // !MI_BEGIN_PROXY_MAP
+#endif // !ROOMCLIENT_UTILS_INTERFACE_PROXY_H_

@@ -19,21 +19,17 @@ QMAKE_CXXFLAGS += -mmacosx-version-min=10.7
 
 INCLUDEPATH += $$PWD/../RoomClient \
     $$PWD/../RoomClient/client/include \
-    $$PWD/../deps/webrtc/include/webrtc \
-    $$PWD/../deps/webrtc/include/webrtc/third_party \
-    $$PWD/../deps/webrtc/include/webrtc/third_party/abseil-cpp \
-    $$PWD/../deps/webrtc/include/webrtc/third_party/boringssl/src/include \
-    $$PWD/../deps/webrtc/include/webrtc/sdk/objc \
-    $$PWD/../deps/webrtc/include/webrtc/sdk/objc/base \
-    $$PWD/../deps/libsdptransform/include \
-    $$PWD/../deps/spdlog/include \
-    $$PWD/../deps/rapidjson/include \
-    $$PWD/../deps/asio/asio/include \
-    $$PWD/../deps/websocketpp \
-    $$PWD/../deps/libmediasoupclient/include \
+    $$PWD/../RoomClient/deps/webrtc/include/webrtc \
+    $$PWD/../RoomClient/deps/webrtc/include/webrtc/third_party/abseil-cpp \
+    $$PWD/../RoomClient/deps/webrtc/include/webrtc/third_party/boringssl/src/include \
+    $$PWD/../RoomClient/deps/spdlog/include \
+    $$PWD/../RoomClient/deps/rapidjson/include \
+    $$PWD/../RoomClient/deps/asio/asio/include \
+#    $$PWD/../deps/libmediasoupclient/include \
     /usr/local/Cellar/glew/2.2.0_1/include
 
-LIBS += -L$$PWD/../deps/webrtc/lib/ -lwebrtc
+#LIBS += -L$$PWD/../deps/webrtc/lib/ -lwebrtc
+LIBS += -L$$PWD/../RoomClient/Release// -lRoomClient
 LIBS += -L/usr/local/Cellar/glew/2.2.0_1/lib/ -lGLEW
 LIBS += -framework AudioToolbox -framework CoreAudio -framework AVFoundation -framework CoreMedia -framework CoreVideo
 

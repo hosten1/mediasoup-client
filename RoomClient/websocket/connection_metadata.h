@@ -4,7 +4,8 @@
  * Created:   2021-11-01
  **/
 
-#pragma once
+#ifndef ROOMCLIENT_WEBSOCKET_CONNECTION_METADATA_OBSERVER_H_
+#define ROOMCLIENT_WEBSOCKET_CONNECTION_METADATA_OBSERVER_H_
 
 #include <memory>
 #include <websocketpp/config/asio_client.hpp>
@@ -55,5 +56,6 @@ namespace vi {
 	};
 
 }
+#endif // !ROOMCLIENT_WEBSOCKET_CONNECTION_METADATA_OBSERVER_H_
 
 

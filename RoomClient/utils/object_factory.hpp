@@ -1,5 +1,6 @@
 
-#pragma once
+#ifndef ROOMCLIENT_UTILS_OBJECT_PROVIDER_H_
+#define ROOMCLIENT_UTILS_OBJECT_PROVIDER_H_
 
 #include <memory>
 #include <string>
@@ -14,58 +15,70 @@ namespace vi
     class ObjectFactory
     {
     public:
-        void initObjects() {
+        void initObjects()
+        {
             rtc::CritScope scope(&_criticalSection);
-            for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
+            for (auto iter = _objects.begin(); iter != _objects.end(); ++iter)
+            {
                 auto object = iter->second;
-                if (object) {
+                if (object)
+                {
                     object->init();
                 }
             }
         }
-        
-        void destroyObjects() {
+
+        void destroyObjects()
+        {
             rtc::CritScope scope(&_criticalSection);
-            for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
+            for (auto iter = _objects.begin(); iter != _objects.end(); ++iter)
+            {
                 auto object = iter->second;
-                if (object) {
+                if (object)
+                {
                     object->destroy();
                 }
             }
             _objects.clear();
         }
-        
-        void registerObject(const std::string& key, const std::shared_ptr<T>& object) {
+
+        void registerObject(const std::string &key, const std::shared_ptr<T> &object)
+        {
             rtc::CritScope scope(&_criticalSection);
             _objects[key] = object;
         }
-        
-        void unregisterObject(const std::string& key) {
+
+        void unregisterObject(const std::string &key)
+        {
             rtc::CritScope scope(&_criticalSection);
             auto it = _objects.find(key);
-            if (it != _objects.end()) {
+            if (it != _objects.end())
+            {
                 _objects.erase(key);
             }
         }
-        
-        std::shared_ptr<T> getObject(const std::string& key) {
+
+        std::shared_ptr<T> getObject(const std::string &key)
+        {
             decltype(_objects) objects;
             {
                 rtc::CritScope scope(&_criticalSection);
                 objects = _objects;
             }
-            
+
             auto it = objects.find(key);
-            if (objects.end() != it) {
+            if (objects.end() != it)
+            {
                 return it->second;
             }
-            
+
             return nullptr;
         }
-        
+
     private:
         rtc::RecursiveCriticalSection _criticalSection;
-        
+
         std::unordered_map<std::string, std::shared_ptr<T>> _objects;
     };
 }
+#endif //! ROOMCLIENT_UTILS_OBJECT_PROVIDER_H_

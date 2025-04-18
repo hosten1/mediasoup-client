@@ -3,8 +3,14 @@
  * Author:    Jackie Ou
  * Created:   2021-11-01
  **/
+/**
+ * This file is part of mediasoup_client project.
+ * Author:    Jackie Ou
+ * Created:   2021-11-01
+ **/
 
-#pragma once
+#ifndef ROOMCLIENT_UTILS_THREAD_PROVIDER_H_
+#define ROOMCLIENT_UTILS_THREAD_PROVIDER_H_
 #include <memory>
 #include <unordered_map>
 #include <mutex>
@@ -14,9 +20,10 @@
 #include "rtc_base/thread.h"
 #include "singleton.h"
 
-namespace vi {
+namespace vi
+{
 
-    class ThreadProvider : public vi::Singleton<ThreadProvider>
+	class ThreadProvider : public vi::Singleton<ThreadProvider>
 	{
 	public:
 		ThreadProvider();
@@ -27,26 +34,26 @@ namespace vi {
 
 		void destroy();
 
-        void create(const std::list<std::string>& threadNames);
+		void create(const std::list<std::string> &threadNames);
 
-        rtc::Thread* thread(const std::string& name);
+		rtc::Thread *thread(const std::string &name);
 
 	private:
-		ThreadProvider(const ThreadProvider&) = delete;
+		ThreadProvider(const ThreadProvider &) = delete;
 
-		ThreadProvider(ThreadProvider&&) = delete;
+		ThreadProvider(ThreadProvider &&) = delete;
 
-		ThreadProvider& operator=(const ThreadProvider&) = delete;
+		ThreadProvider &operator=(const ThreadProvider &) = delete;
 
 	public:
 		void stopAll();
 
 	private:
-        std::unordered_map<std::string, std::shared_ptr<rtc::Thread>> _threadsMap;
-		
+		std::unordered_map<std::string, std::shared_ptr<rtc::Thread>> _threadsMap;
+
 		std::mutex _mutex;
 
-		rtc::Thread* _mainThread = nullptr;
+		rtc::Thread *_mainThread = nullptr;
 
 		std::atomic_bool _inited;
 
@@ -55,3 +62,4 @@ namespace vi {
 }
 
 #define TMgr ThreadProvider::sharedInstance()
+#endif // ! ROOMCLIENT_UTILS_THREAD_PROVIDER_H_

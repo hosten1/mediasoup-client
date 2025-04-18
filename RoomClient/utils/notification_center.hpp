@@ -1,11 +1,13 @@
 
-#pragma once
+#ifndef ROOMCLIENT_UTILS_NOTIFICATION_CENTER_H_
+#define ROOMCLIENT_UTILS_NOTIFICATION_CENTER_H_
 
 #include <memory>
 #include <list>
 #include "rtc_base/deprecated/recursive_critical_section.h"
 
-namespace vi {
+namespace vi
+{
 
     /// Main Features:
     /// 1. Thread safe
@@ -68,43 +70,45 @@ namespace vi {
     ///     auto nf = std::make_shared<CustomNotification>(10085, 10086);
     ///     nfc->postNotification(nf);
     /// }
-    /// 
-    
+    ///
+
     class IObserver;
     class INotification;
 
-    class NotificationCenter : public std::enable_shared_from_this<NotificationCenter> {
-        
+    class NotificationCenter : public std::enable_shared_from_this<NotificationCenter>
+    {
+
     public:
         NotificationCenter();
-            
-        virtual ~NotificationCenter() {}
-            
-        void addObserver(const IObserver& observer);
-        
-        void removeObserver(const IObserver& observer);
-        
-        bool hasObserver(const IObserver& observer);
-            
-        std::size_t numOfObservers();
-            
-        void clearObserver();
-            
-        void postNotification(const std::shared_ptr<INotification>& notification);
 
-        static const std::shared_ptr<NotificationCenter>& defaultCenter();
-                
+        virtual ~NotificationCenter() {}
+
+        void addObserver(const IObserver &observer);
+
+        void removeObserver(const IObserver &observer);
+
+        bool hasObserver(const IObserver &observer);
+
+        std::size_t numOfObservers();
+
+        void clearObserver();
+
+        void postNotification(const std::shared_ptr<INotification> &notification);
+
+        static const std::shared_ptr<NotificationCenter> &defaultCenter();
+
     private:
-        void notifyObservers(const std::shared_ptr<INotification>& notification);
-        
-        bool hasObserverInternal(const IObserver& observer);
-        
+        void notifyObservers(const std::shared_ptr<INotification> &notification);
+
+        bool hasObserverInternal(const IObserver &observer);
+
         void removeInvalidObservers();
-            
+
     private:
         rtc::RecursiveCriticalSection _criticalSection;
-            
+
         std::list<std::shared_ptr<IObserver>> _observers;
     };
-    
+
 }
+#endif // ROOMCLIENT_UTILS_NOTIFICATION_CENTER_H_

@@ -25,30 +25,32 @@ endif()
 # 3) Add your staticlib target
 # ——————————————————————————————————————————————
 set(ROOM_CLIENT_SOURCES
-    logger/rtc_log_sink.cpp 
+    logger/rtc_log_sink.cpp
     logger/u_logger.cpp
     opengl/i420_texture_cache.cpp
     opengl/video_shader.cpp
     service/base_video_capturer.cc
     service/component_factory.cpp
     service/mac_capturer.mm
-    service/media_controller.cpp 
-    service/mediasoup_api.cpp 
+    service/media_controller.cpp
+    service/mediasoup_api.cpp
     service/participant.cpp
     service/participant_controller.cpp
     service/room_client.cpp
     service/signaling_client.cpp
-    service/service_factory.cpp 
+    service/service_factory.cpp
     service/windows_capture.cpp
-    utils/bad_any_cast.cc 
-    utils/notification_center.cpp 
-    utils/notification_keys.cpp 
-    utils/sdp_utils.cpp 
+    utils/bad_any_cast.cc
+    utils/notification_center.cpp
+
+    # utils/notification_keys.cpp
+    utils/universal_observable.cpp
+    utils/sdp_utils.cpp
     utils/string_utils.cpp
     utils/task_scheduler.cpp
     utils/thread_provider.cpp
     websocket/connection_metadata.cpp
-    websocket/websocket_endpoint.cpp 
+    websocket/websocket_endpoint.cpp
     websocket/websocket_transport.cpp
 )
 

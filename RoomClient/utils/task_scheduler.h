@@ -4,7 +4,8 @@
  * Created:   2021-11-01
  **/
 
-#pragma once
+#ifndef ROOMCLIENT_UTILS_TASK_SCHEDULER_H_
+#define ROOMCLIENT_UTILS_TASK_SCHEDULER_H_
 
 #include <memory>
 #include <functional>
@@ -18,38 +19,44 @@
 #include "logger/u_logger.h"
 #include "rtc_base/thread.h"
 
-namespace {
+namespace
+{
 
 	int64_t createRandomId64()
 	{
 		int64_t seed = std::chrono::system_clock::now().time_since_epoch().count();
-		std::mt19937_64 gen(seed);  
+		std::mt19937_64 gen(seed);
 		return gen();
 	}
 }
 
-namespace vi {
+namespace vi
+{
 	class TaskScheduler;
-	template<class Closure>
-	class OneShotTask: public webrtc::QueuedTask {
+	template <class Closure>
+	class OneShotTask : public webrtc::QueuedTask
+	{
 	public:
-		explicit OneShotTask(Closure&& closure, uint64_t id, std::weak_ptr<TaskScheduler> scheduler)
-			: _closure(std::forward<Closure>(closure))
-			, _id(id)
-			, _scheduler(scheduler) {
+		explicit OneShotTask(Closure &&closure, uint64_t id, std::weak_ptr<TaskScheduler> scheduler)
+			: _closure(std::forward<Closure>(closure)), _id(id), _scheduler(scheduler)
+		{
 		}
 
-		bool Run() override {
-			if (auto scheduler = _scheduler.lock()) {
+		bool Run() override
+		{
+			if (auto scheduler = _scheduler.lock())
+			{
 				std::unordered_set<uint64_t> ids = scheduler->getTaskIds();
-				if (ids.find(_id) != ids.end()) {
+				if (ids.find(_id) != ids.end())
+				{
 					_closure();
 				}
 			}
 			return true;
 		}
 
-		uint16_t getTaskId() {
+		uint16_t getTaskId()
+		{
 			return _id;
 		}
 
@@ -59,32 +66,35 @@ namespace vi {
 		std::weak_ptr<TaskScheduler> _scheduler;
 	};
 
-	template<class Closure>
-	class RepetitiveTask : public webrtc::QueuedTask {
+	template <class Closure>
+	class RepetitiveTask : public webrtc::QueuedTask
+	{
 	public:
-		explicit RepetitiveTask(Closure&& closure, uint32_t milliseconds, uint64_t id, std::weak_ptr<TaskScheduler> scheduler, rtc::Thread* thread)
-			: _closure(std::forward<Closure>(closure))
-			, _milliseconds(milliseconds)
-			, _id(id)
-			, _scheduler(scheduler)
-			, _thread(thread) {
+		explicit RepetitiveTask(Closure &&closure, uint32_t milliseconds, uint64_t id, std::weak_ptr<TaskScheduler> scheduler, rtc::Thread *thread)
+			: _closure(std::forward<Closure>(closure)), _milliseconds(milliseconds), _id(id), _scheduler(scheduler), _thread(thread)
+		{
 		}
 
-		bool Run() override {
+		bool Run() override
+		{
 			bool cancelled = true;
-			if (auto scheduler = _scheduler.lock()) {
+			if (auto scheduler = _scheduler.lock())
+			{
 				std::unordered_set<uint64_t> ids = scheduler->getTaskIds();
-				if (ids.find(_id) != ids.end()) {
+				if (ids.find(_id) != ids.end())
+				{
 					cancelled = false;
 				}
 			}
 
-			if (!cancelled) {
+			if (!cancelled)
+			{
 				_closure();
 				_thread->PostDelayedTask(absl::WrapUnique(this), _milliseconds);
 				return false;
 			}
-			else {
+			else
+			{
 				return true;
 			}
 		}
@@ -93,53 +103,64 @@ namespace vi {
 		typename std::decay<Closure>::type _closure;
 		const uint32_t _milliseconds;
 		const uint64_t _id;
-		rtc::Thread* const _thread;
+		rtc::Thread *const _thread;
 		std::weak_ptr<TaskScheduler> _scheduler;
 	};
 
-	class TaskScheduler : public std::enable_shared_from_this<TaskScheduler> {
+	class TaskScheduler : public std::enable_shared_from_this<TaskScheduler>
+	{
 	public:
 		static std::shared_ptr<TaskScheduler> create();
 
-		~TaskScheduler() {
+		~TaskScheduler()
+		{
 			DLOG("~TaskScheduler()");
 			cancelAll();
 		}
 
 		template <class Closure>
-		uint64_t schedule(Closure&& closure, uint32_t milliseconds = 0, bool repetitive = false) {
-			if (!repetitive) {
+		uint64_t schedule(Closure &&closure, uint32_t milliseconds = 0, bool repetitive = false)
+		{
+			if (!repetitive)
+			{
 				return scheduleOneShotTask(std::forward<Closure>(closure), milliseconds);
 			}
-			else {
+			else
+			{
 				return scheduleRepetitiveTask(std::forward<Closure>(closure), milliseconds);
 			}
 		}
 
-		void cancel(uint64_t id) {
+		void cancel(uint64_t id)
+		{
 			std::lock_guard<std::mutex> lock(_mutex);
-			if (_taskIdSet.find(id) != _taskIdSet.end()) {
+			if (_taskIdSet.find(id) != _taskIdSet.end())
+			{
 				_taskIdSet.erase(id);
 			}
 		}
 
-		void cancelAll() {
+		void cancelAll()
+		{
 			std::lock_guard<std::mutex> lock(_mutex);
 			_thread->Stop();
 			_taskIdSet.clear();
 		}
 
-		const std::unordered_set<uint64_t>& getTaskIds() {
+		const std::unordered_set<uint64_t> &getTaskIds()
+		{
 			std::lock_guard<std::mutex> lock(_mutex);
 			return _taskIdSet;
 		}
 
 	private:
-		TaskScheduler() {
+		TaskScheduler()
+		{
 			init();
 		}
 
-		void init() {
+		void init()
+		{
 			std::string schedulerId = "post-" + std::to_string((uint64_t)this);
 			_thread = rtc::Thread::Create();
 			_thread->SetName(schedulerId, nullptr);
@@ -147,7 +168,8 @@ namespace vi {
 		}
 
 		template <class Closure>
-		uint64_t scheduleOneShotTask(Closure&& closure, uint32_t milliseconds) {
+		uint64_t scheduleOneShotTask(Closure &&closure, uint32_t milliseconds)
+		{
 			uint64_t id = createRandomId64();
 			auto task = createOneShotTask(std::forward<Closure>(closure), id);
 			{
@@ -160,7 +182,8 @@ namespace vi {
 		}
 
 		template <class Closure>
-		uint64_t scheduleRepetitiveTask(Closure&& closure, uint32_t milliseconds) {
+		uint64_t scheduleRepetitiveTask(Closure &&closure, uint32_t milliseconds)
+		{
 			uint64_t id = createRandomId64();
 			auto task = createRepetitiveTask(std::forward<Closure>(closure), milliseconds, id);
 			{
@@ -172,12 +195,14 @@ namespace vi {
 		}
 
 		template <typename Closure>
-		std::unique_ptr<webrtc::QueuedTask> createOneShotTask(Closure&& closure, uint64_t id) {
+		std::unique_ptr<webrtc::QueuedTask> createOneShotTask(Closure &&closure, uint64_t id)
+		{
 			return std::make_unique<OneShotTask<Closure>>(std::forward<Closure>(closure), id, weak_from_this());
 		}
 
 		template <typename Closure>
-		std::unique_ptr<webrtc::QueuedTask> createRepetitiveTask(Closure&& closure, uint32_t milliseconds, uint64_t id) {
+		std::unique_ptr<webrtc::QueuedTask> createRepetitiveTask(Closure &&closure, uint32_t milliseconds, uint64_t id)
+		{
 			return std::make_unique<RepetitiveTask<Closure>>(std::forward<Closure>(closure), milliseconds, id, weak_from_this(), _thread.get());
 		}
 
@@ -188,3 +213,4 @@ namespace vi {
 	};
 
 }
+#endif //! ROOMCLIENT_UTILS_TASK_SCHEDULER_H_

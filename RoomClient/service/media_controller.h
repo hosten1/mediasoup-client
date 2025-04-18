@@ -1,4 +1,5 @@
-#pragma once
+#ifndef ROOMCLIENT_SERVICE_MEDIA_CONTROLLER_H_
+#define ROOMCLIENT_SERVICE_MEDIA_CONTROLLER_H_
 
 #include <memory>
 #include "i_media_controller.h"
@@ -164,3 +165,4 @@ namespace vi
     };
 
 }
+#endif // ROOMCLIENT_SERVICE_MEDIA_CONTROLLER_H_
