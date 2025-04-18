@@ -30,10 +30,18 @@ INCLUDEPATH += $$PWD/../RoomClient \
     $$PWD/../RoomClient/deps/libsdptransform/include/json.hpp
     /usr/local/Cellar/glew/2.2.0_1/include
 
-#LIBS += -L$$PWD/../deps/webrtc/lib/ -lwebrtc
-LIBS += -L$$PWD/../RoomClient/Release// -lRoomClient
-LIBS += -L/usr/local/Cellar/glew/2.2.0_1/lib/ -lGLEW
-LIBS += -framework AudioToolbox -framework CoreAudio -framework AVFoundation -framework CoreMedia -framework CoreVideo
+LIBS += -L$$PWD/../RoomClient/deps/webrtc/lib/ -lwebrtc
+LIBS += -L$$PWD/../RoomClient/deps/webrtc/lib/ -lsdk_combined
+LIBS += -L$$PWD/../RoomClient/deps/libssl/lib/ -lcrypto
+LIBS += -L$$PWD/../RoomClient/deps/libssl/lib/ -lssl
+LIBS += -L$$PWD/../RoomClient/Release -lRoomClient
+mac {
+    LIBS += -L/usr/local/Cellar/glew/2.2.0_1/lib/ -lGLEW
+    LIBS += -framework AudioToolbox -framework CoreAudio -framework AVFoundation -framework CoreMedia -framework CoreVideo
+    LIBS += -framework CoreGraphics \
+            -framework ApplicationServices
+}
+
 
 CONFIG(debug, debug | release) {
     DESTDIR = $$PWD/../Debug

@@ -70,6 +70,15 @@ if(USE_LIB_MEDIASOUP_CLIENT_SOURCE)
     # set(LIBWEBRTC_INCLUDE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/deps/webrtc/include/webrtc" CACHE STRING "libwebrtc include path")
     # set(LIBWEBRTC_BINARY_PATH "" CACHE STRING "libwebrtc binary path")
     # add_subdirectory(deps/libmediasoupclient)
+    # Set version number.
+    set(mediasoupclient_VERSION_MAJOR 3)
+    set(mediasoupclient_VERSION_MINOR 2)
+    set(mediasoupclient_VERSION_PATCH 0)
+    # Configure a header file to pass the version.
+    configure_file(
+        "${CMAKE_CURRENT_SOURCE_DIR}/deps/libmediasoupclient/version.hpp.in"
+        "${CMAKE_CURRENT_SOURCE_DIR}/deps/libmediasoupclient/include/version.hpp"
+    )
     list(APPEND ROOM_CLIENT_SOURCES
         deps/libsdptransform/src/grammar.cpp
         deps/libsdptransform/src/parser.cpp
@@ -259,8 +268,17 @@ target_link_libraries(RoomClient
     PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/deps/webrtc/lib/libwebrtc.a
     ${CMAKE_CURRENT_SOURCE_DIR}/deps/webrtc/lib/libsdk_combined.a
+    ${CMAKE_CURRENT_SOURCE_DIR}/deps/libssl/lib/libcrypto.a
+    ${CMAKE_CURRENT_SOURCE_DIR}/deps/libssl/lib/libssl.a
     "-framework AppKit"
-)
+    "-framework CoreGraphics"
+    "-framework ApplicationServices"
+    "-framework CoreMedia"
+    "-framework CoreVideo"
+    "-framework CoreFoundation"
+    "-framework CoreAudio"
+    "-framework AudioToolbox"
+    "-framework AVFoundation")
 
 # ——————————————————————————————————————————————
 # 7) Output directory
