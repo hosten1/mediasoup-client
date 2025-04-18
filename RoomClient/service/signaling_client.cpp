@@ -5,6 +5,7 @@
 #include "websocket/i_transport_observer.h"
 #include "websocket/websocket_request.h"
 #include "websocket/websocket_transport.h"
+#include "utils/thread_provider.h"
 
 namespace vi
 {

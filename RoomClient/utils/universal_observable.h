@@ -1,17 +1,24 @@
+/************************************************************************
+ * @Copyright: 2021-2024
+ * @FileName:
+ * @Description: Open source mediasoup room client library
+ * @Version: 1.0.0
+ * @Author: Jackie Ou
+ * @CreateTime: 2021-10-1
+ *************************************************************************/
 #ifndef ROOMCLIENT_UTILS_UNIVERSAL_H_
 #define ROOMCLIENT_UTILS_UNIVERSAL_H_
 
 #include <type_traits>
-#include <vector>
-#include <variant>
+#include <list>
 #include <algorithm>
+#include "absl/types/any.h"
 #include "absl/types/optional.h"
 #include "rtc_base/deprecated/recursive_critical_section.h"
+#include "rtc_base/thread.h"
 
 namespace vi
 {
-    class TMgr; // // 前置声明 TMgr 类型
-
     template <typename Observer>
     class UniversalObservable
     {
@@ -25,12 +32,14 @@ namespace vi
         bool hasObserver(const observer_ptr &observer);
 
     protected:
+        bool hasObserverInternal(const observer_ptr &observer);
         virtual void notifyObservers(std::function<void(const observer_ptr &)> notifier) const;
 
     private:
         template <typename T = std::shared_ptr<Observer>>
-        struct InnerObject
+        class InnerObject
         {
+        public:
             InnerObject(std::shared_ptr<Observer> o, absl::optional<std::string> name)
                 : observer(o), threadName(name)
             {
@@ -43,11 +52,8 @@ namespace vi
         using WeakObject = InnerObject<std::weak_ptr<Observer>>;
         using Object = InnerObject<std::shared_ptr<Observer>>;
 
-        bool hasObserverInternal(const observer_ptr &observer) const;
-        bool matchesObserver(const std::variant<WeakObject, Object> &item, const observer_ptr &observer) const;
-
-        mutable rtc::RecursiveCriticalSection _criticalSection;
-        std::vector<std::variant<WeakObject, Object>> _observers;
+        rtc::RecursiveCriticalSection _criticalSection;
+        std::list<absl::any> _observers;
     };
 }
 #endif // ! ROOMCLIENT_UTILS_UNIVERSAL_H_

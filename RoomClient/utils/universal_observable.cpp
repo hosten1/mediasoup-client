@@ -9,7 +9,8 @@ namespace vi
         rtc::CritScope scope(&_criticalSection);
         if (!hasObserverInternal(observer))
         {
-            _observers.emplace_back(WeakObject{observer, threadName});
+            WeakObject wobj(observer, threadName);
+            _observers.emplace_back(wobj);
         }
     }
 
@@ -19,7 +20,8 @@ namespace vi
         rtc::CritScope scope(&_criticalSection);
         if (!hasObserverInternal(observer))
         {
-            _observers.emplace_back(Object{observer, threadName});
+            Object obj(observer, threadName);
+            _observers.emplace_back(obj);
         }
     }
 
@@ -27,14 +29,30 @@ namespace vi
     void UniversalObservable<Observer>::removeObserver(const observer_ptr &observer)
     {
         rtc::CritScope scope(&_criticalSection);
-        auto it = std::find_if(_observers.begin(), _observers.end(),
-                               [&observer](const auto &item)
-                               {
-                                   return matchesObserver(item, observer);
-                               });
-        if (it != _observers.end())
+        for (auto it = _observers.begin(); it != _observers.end(); ++it)
         {
-            _observers.erase(it);
+            auto var = absl::any(*it);
+            if (var.has_value())
+            {
+                if (absl::any_cast<WeakObject>(&var))
+                {
+                    WeakObject wobj = absl::any_cast<WeakObject>(var);
+                    if (wobj.observer.lock() == observer)
+                    {
+                        _observers.erase(it);
+                        return;
+                    }
+                }
+                else if (absl::any_cast<Object>(&var))
+                {
+                    Object obj = absl::any_cast<Object>(var);
+                    if (obj.observer == observer)
+                    {
+                        _observers.erase(it);
+                        return;
+                    }
+                }
+            }
         }
     }
 
@@ -60,15 +78,32 @@ namespace vi
     }
 
     template <typename Observer>
-    bool UniversalObservable<Observer>::hasObserverInternal(const observer_ptr &observer) const
+    bool UniversalObservable<Observer>::hasObserverInternal(const observer_ptr &observer)
     {
-        for (const auto &item : _observers)
+        for (auto it = _observers.begin(); it != _observers.end(); ++it)
         {
-            if (matchesObserver(item, observer))
+            auto var = absl::any(*it);
+            if (var.has_value())
             {
-                return true;
+                if (absl::any_cast<WeakObject>(&var))
+                {
+                    WeakObject wobj = absl::any_cast<WeakObject>(var);
+                    if (wobj.observer.lock() == observer)
+                    {
+                        return true;
+                    }
+                }
+                else if (absl::any_cast<Object>(&var))
+                {
+                    Object obj = absl::any_cast<Object>(var);
+                    if (obj.observer == observer)
+                    {
+                        return true;
+                    }
+                }
             }
         }
+
         return false;
     }
 
@@ -81,49 +116,44 @@ namespace vi
             observers = _observers;
         }
 
-        for (const auto &item : observers)
+        for (const auto &observer : observers)
         {
-            std::shared_ptr<Observer> obs;
-            absl::optional<std::string> threadName;
-
-            std::visit([&](const auto &obj)
-                       {
-                obs = obj.observer.lock();
-                threadName = obj.threadName; }, item);
-
-            if (obs)
+            auto var = absl::any(observer);
+            if (var.has_value())
             {
-                rtc::Thread *thread = TMgr->thread(threadName.value_or(""));
-                assert(thread);
-                if (thread->IsCurrent())
+                std::shared_ptr<Observer> obs;
+                rtc::Thread *thread = nullptr;
+
+                if (absl::any_cast<WeakObject>(&var))
                 {
-                    notifier(obs);
+                    WeakObject wobj = absl::any_cast<WeakObject>(var);
+                    obs = wobj.observer.lock();
+                    thread = wobj.thread;
                 }
-                else
+                else if (absl::any_cast<Object>(&var))
                 {
-                    thread->PostTask(RTC_FROM_HERE, [wobs = std::weak_ptr<Observer>(obs), notifier]()
-                                     {
-                        if (auto observer = wobs.lock())
-                        {
-                            notifier(observer);
-                        } });
+                    Object obj = absl::any_cast<Object>(var);
+                    obs = obj.observer;
+                    thread = obj.thread;
+                }
+
+                if (obs)
+                {
+                    assert(thread);
+                    if (thread->IsCurrent())
+                    {
+                        notifier(obs);
+                    }
+                    else
+                    {
+                        thread->PostTask([wobs = std::weak_ptr<Observer>(obs), notifier]()
+                                         {
+								if (auto observer = wobs.lock()) {
+                                    notifier(observer);
+								} });
+                    }
                 }
             }
         }
     }
-
-    template <typename Observer>
-    bool UniversalObservable<Observer>::matchesObserver(const std::variant<WeakObject, Object> &item, const observer_ptr &observer) const
-    {
-        return std::visit([&](const auto &obj)
-                          {
-            if (obj.observer.lock() == observer || obj.observer == observer)
-            {
-                return true;
-            }
-            return false; }, item);
-    }
-
-    // 显式实例化模板，替换为实际观察者类型
-    template class UniversalObservable<MyObserver>; // 替换 MyObserver 为实际类型
 }

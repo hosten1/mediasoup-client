@@ -2,6 +2,7 @@
 #define ROOMCLIENT_SERVICE_SIGNALINF_CLIENT_H_
 
 #include <memory>
+#include <unordered_map>
 #include "i_signaling_client.h"
 #include "websocket/i_transport_observer.h"
 #include "utils/universal_observable.h"
