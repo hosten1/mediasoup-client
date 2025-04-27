@@ -3,21 +3,41 @@ QT       += core gui opengl openglwidgets
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 CONFIG += c++17
+# 仅在 macOS 下生效时：
+macx{
+     CONFIG += app_bundle
+     DEFINES += WEBRTC_POSIX WEBRTC_MAC ASIO_STANDALONE GL_SILENCE_DEPRECATION
+     #QT_NO_KEYWORDS
 
-DEFINES += WEBRTC_POSIX WEBRTC_MAC ASIO_STANDALONE GL_SILENCE_DEPRECATION
-#QT_NO_KEYWORDS
+     #QMAKE_INFO_PLIST +=  $${TARGET}/Info.plist
+     #QMAKE_POST_LINK += sed -i -e "s/@VERSION@/$$VERSION/g" "../Debug/$${TARGET}.app/Contents/Info.plist";
 
-#QMAKE_INFO_PLIST +=  $${TARGET}/Info.plist
-#QMAKE_POST_LINK += sed -i -e "s/@VERSION@/$$VERSION/g" "../Debug/$${TARGET}.app/Contents/Info.plist";
+     # You can make your code fail to compile if it uses deprecated APIs.
+     # In order to do so, uncomment the following line.
+     #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
+     QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.7
+     QMAKE_CFLAGS += -mmacosx-version-min=10.7
+     QMAKE_CXXFLAGS += -mmacosx-version-min=10.7
+     QMAKE_INFO_PLIST = $$PWD/../RoomClient/deps/macos/Info.plist
+     ENTITLEMENTS_FILE = $$PWD/../RoomClient/deps/macos/App.entitlements
+     TARGET_APP_PATH = $$OUT_PWD/$${TARGET}.app/Contents/
 
-# You can make your code fail to compile if it uses deprecated APIs.
-# In order to do so, uncomment the following line.
-#DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
-QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.7
-QMAKE_CFLAGS += -mmacosx-version-min=10.7
-QMAKE_CXXFLAGS += -mmacosx-version-min=10.7
+      # 复制 entitlements 文件
+     QMAKE_POST_LINK += cp $$ENTITLEMENTS_FILE $$TARGET_APP_PATH
+     QMAKE_CXXFLAGS += -fobjc-arc -objc
+     QMAKE_OBJCFLAGS += -fobjc-arc
+     HEADERS += \
+            $$PWD/../RoomClient/deps/macos/promisedevice.h
+     OBJECTIVE_SOURCES += \
+            $$PWD/../RoomClient/deps/macos/promisedevice.mm
+      # OpenSSL 依赖
+#     INCLUDEPATH += $$PWD/../RoomClient/deps/macos/ssl1.1.1w/include
+#     LIBS += -L$$PWD/../RoomClient/deps/macos/ssl1.1.1w/lib -lssl -lcrypto
+}
+
 #在 Qt 项目里遇到第三方库（比如 sigslot）也用到 emit、signals、slots 这些名字时，就会和 Qt 的 moc 关键字冲突，报出类似：
 #CONFIG += no_keywords
+
 
 INCLUDEPATH += $$PWD/../RoomClient \
     $$PWD/../RoomClient/client/include \
@@ -33,7 +53,10 @@ INCLUDEPATH += $$PWD/../RoomClient \
     /usr/local/Cellar/glew/2.2.0_1/include
 
 LIBS += -L$$PWD/../RoomClient/deps/webrtc/lib/ -lwebrtc
-LIBS += -L$$PWD/../RoomClient/deps/webrtc/lib/ -lsdk_combined
+# iOS和MacOS 下都生效
+mac{
+    LIBS += -L$$PWD/../RoomClient/deps/webrtc/lib/ -lsdk_combined
+}
 LIBS += -L$$PWD/../RoomClient/deps/libssl/lib/ -lcrypto
 LIBS += -L$$PWD/../RoomClient/deps/libssl/lib/ -lssl
 LIBS += -L$$PWD/../RoomClient/Release -lRoomClient
