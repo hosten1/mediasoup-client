@@ -6,11 +6,26 @@
 #include "service/i_room_client_observer.h"
 #include "service/component_factory.h"
 #include "api/media_stream_interface.h"
+#include "promisedevice.h"
 // #include "rtc_base/physical_socket_server.h"
 #include <QOpenGLFunctions>
 
 static void registerMetaTypes()
 {
+    Permissions::requestCameraPermission([](bool granted) {
+            if (granted) {
+                qDebug() << "摄像头权限已授予";
+            } else {
+                qDebug() << "用户拒绝了摄像头权限";
+            }
+        });
+    Permissions::requestMicrophonePermission([](bool granted) {
+            if (granted) {
+                qDebug() << "mic权限已授予";
+            } else {
+                qDebug() << "用户拒绝了mic权限";
+            }
+        });
     qRegisterMetaType<vi::RoomState>("vi::RoomState");
     qRegisterMetaType<webrtc::MediaStreamTrackInterface *>("webrtc::MediaStreamTrackInterface* track");
     qRegisterMetaType<const webrtc::VideoFrame &>("const webrtc::VideoFrame&");
