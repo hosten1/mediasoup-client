@@ -17,8 +17,7 @@
 #include "video_renderer.h"
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent)
-    , ui(new Ui::MainWindow)
+    : QMainWindow(parent), ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
 
@@ -47,7 +46,8 @@ void MainWindow::init()
     RClient->getMediaController()->addObserver(_mediaEventAdapter);
     RClient->getParticipantController()->addObserver(_participantEventAdapter);
 
-    if (!_galleryView) {
+    if (!_galleryView)
+    {
         _galleryView = new GalleryView(this);
         setCentralWidget(_galleryView);
     }
@@ -59,39 +59,43 @@ void MainWindow::destroy()
     RClient->getMediaController()->removeObserver(_mediaEventAdapter);
     RClient->getParticipantController()->removeObserver(_participantEventAdapter);
 
-    if (_galleryView) {
+    if (_galleryView)
+    {
         _galleryView->removeAll();
     }
 }
 
 void MainWindow::onRoomStateChanged(vi::RoomState state)
 {
-    if (state == vi::RoomState::CONNECTED) {
+    if (state == vi::RoomState::CONNECTED)
+    {
         RClient->getMediaController()->enableAudio(true);
         RClient->getMediaController()->enableVideo(true);
     }
 }
 
-void MainWindow::onVideoTrackCreated(const std::string& id, webrtc::MediaStreamTrackInterface* track)
+void MainWindow::onVideoTrackCreated(const std::string &id, webrtc::MediaStreamTrackInterface *track)
 {
-    if (!track) {
+    if (!track)
+    {
         return;
     }
-    //MacVideoRenderer* renderer = new MacVideoRenderer(_galleryView);
-    VideoRenderer* renderer = new VideoRenderer(_galleryView);
+    // MacVideoRenderer* renderer = new MacVideoRenderer(_galleryView);
+    VideoRenderer *renderer = new VideoRenderer(_galleryView);
     renderer->init();
     renderer->show();
 
-    webrtc::VideoTrackInterface* vt = static_cast<webrtc::VideoTrackInterface*>(track);
+    webrtc::VideoTrackInterface *vt = static_cast<webrtc::VideoTrackInterface *>(track);
     std::shared_ptr<ContentView> view = std::make_shared<ContentView>(id, vt, renderer);
     view->init();
 
     _galleryView->insertView(view);
 }
 
-void MainWindow::onVideoTrackRemoved(const std::string& id, webrtc::MediaStreamTrackInterface* track)
+void MainWindow::onVideoTrackRemoved(const std::string &id, webrtc::MediaStreamTrackInterface *track)
 {
-    if (!track) {
+    if (!track)
+    {
         return;
     }
     _galleryView->removeView(id);
@@ -99,12 +103,11 @@ void MainWindow::onVideoTrackRemoved(const std::string& id, webrtc::MediaStreamT
 
 void MainWindow::on_actionJoin_triggered()
 {
-    RClient->join("192.168.64.3", 4443, "test-room", "jackie", nullptr);
+    RClient->join("43.134.4.247", 4443, "test-room", "jackie", nullptr);
 }
 
 void MainWindow::on_actionleave_triggered()
 {
-
 }
 
 void MainWindow::on_actionEnbaleMicrophone_triggered()
@@ -119,12 +122,10 @@ void MainWindow::on_actionDisableMicrophone_triggered()
 
 void MainWindow::on_actionMuteMicrophone_triggered()
 {
-
 }
 
 void MainWindow::on_actionUnmuteMicrophone_triggered()
 {
-
 }
 
 void MainWindow::on_actionEnableCamera_triggered()
@@ -139,20 +140,17 @@ void MainWindow::on_actionDisableCamera_triggered()
 
 void MainWindow::onParticipantCreated(std::shared_ptr<vi::IParticipant> participant)
 {
-
 }
 
 void MainWindow::onParticipantUpdated(std::shared_ptr<vi::IParticipant> participant)
 {
-
 }
 
 void MainWindow::onParticipantRemoved(std::shared_ptr<vi::IParticipant> participant)
 {
-
 }
 
-void MainWindow::closeEvent(QCloseEvent* event)
+void MainWindow::closeEvent(QCloseEvent *event)
 {
     destroy();
 }

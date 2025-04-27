@@ -213,7 +213,6 @@ namespace mediasoupclient
 				  normalizedEncodings.push_back(encoding);
 			  });
 		}
-
 		// May throw.
 		auto sendResult = this->sendHandler->Send(track, &normalizedEncodings, codecOptions);
 

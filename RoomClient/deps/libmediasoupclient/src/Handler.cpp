@@ -186,10 +186,25 @@ namespace mediasoupclient
 
 		webrtc::RtpTransceiverInit transceiverInit;
 
-		if (encodings && !encodings->empty())
-			transceiverInit.send_encodings = *encodings;
+                if (encodings && !encodings->empty()){
+                    transceiverInit.send_encodings = *encodings;
+                }
+                rtc::scoped_refptr<webrtc::RtpTransceiverInterface> transceiver = nullptr;
+                if(!transceiverInit.send_encodings.empty()){
+                    transceiver = this->pc->AddTransceiver(track, transceiverInit);
 
-		webrtc::RtpTransceiverInterface* transceiver = this->pc->AddTransceiver(track, transceiverInit);
+                }else{
+                    cricket::MediaType media_type;
+                      if (track->kind() == webrtc::MediaStreamTrackInterface::kAudioKind) {
+                        media_type = cricket::MEDIA_TYPE_AUDIO;
+                      } else if (track->kind() == webrtc::MediaStreamTrackInterface::kVideoKind) {
+                        media_type = cricket::MEDIA_TYPE_VIDEO;
+                      }
+                    transceiver = this->pc->AddTransceiver(media_type);
+
+                }
+
+
 
 		if (!transceiver)
 			MSC_THROW_ERROR("error creating transceiver");
@@ -223,11 +238,12 @@ namespace mediasoupclient
 		}
 		catch (std::exception& error)
 		{
+            MSC_DEBUG("Caught exception:%s",  error.what());
 			// Panic here. Try to undo things.
 			transceiver->SetDirection(webrtc::RtpTransceiverDirection::kInactive);
 			transceiver->sender()->SetTrack(nullptr);
 
-			throw;
+			// throw;
 		}
 
 		auto localSdp       = this->pc->GetLocalDescription();

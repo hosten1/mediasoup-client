@@ -205,6 +205,20 @@ add_subdirectory(deps/spdlog)
 
 add_library(RoomClient STATIC ${ROOM_CLIENT_SOURCES})
 
+# 对 Debug 生效，添加 -O0 -g；对 Release 生效，使用 -O3
+target_compile_options(RoomClient PRIVATE
+    "$<$<CONFIG:Debug>:-O0;-g>"
+    "$<$<CONFIG:Release>:-O3>"
+)
+
+# 仅对 Debug 生效
+# target_compile_options(RoomClient PRIVATE
+#     "$<$<CONFIG:Debug>:-fno-inline;-fno-inline-small-functions;-fno-lto>"
+# )
+# set_target_properties(RoomClient PROPERTIES
+#     INTERPROCEDURAL_OPTIMIZATION_RELEASE OFF
+# )
+
 # ——————————————————————————————————————————————
 # 4) Include directories
 # ——————————————————————————————————————————————
