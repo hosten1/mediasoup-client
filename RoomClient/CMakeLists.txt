@@ -10,10 +10,13 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 # match your Qt .pro deployment target
 set(CMAKE_OSX_DEPLOYMENT_TARGET "10.7" CACHE STRING "")
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -frtti -fexceptions")
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    add_compile_options(-Wno-sign-conversion -Wno-sign-compare)
+    add_compile_options(-Wno-sign-conversion -Wno-sign-compare -frtti -fexceptions)
 endif()
+
+
 
 # ——————————————————————————————————————————————
 # 2) Find Qt (Core only, no GUI)
@@ -253,6 +256,59 @@ if(APPLE)
         GL_SILENCE_DEPRECATION
         QT_NO_KEYWORDS
     )
+
+    # ——————————————————————————————————————————————
+    # 6) Link libraries
+    # ——————————————————————————————————————————————
+    # Link QtCore statically
+    target_link_libraries(RoomClient
+        PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/deps/webrtc/lib/libwebrtc.a
+        ${CMAKE_CURRENT_SOURCE_DIR}/deps/webrtc/lib/libsdk_combined.a
+        ${CMAKE_CURRENT_SOURCE_DIR}/deps/libssl/lib/libcrypto.a
+        ${CMAKE_CURRENT_SOURCE_DIR}/deps/libssl/lib/libssl.a
+        "-framework AppKit"
+        "-framework CoreGraphics"
+        "-framework ApplicationServices"
+        "-framework CoreMedia"
+        "-framework CoreVideo"
+        "-framework CoreFoundation"
+        "-framework CoreAudio"
+        "-framework AudioToolbox"
+        "-framework AVFoundation")
+    # 添加库目录
+# link_directories(${CMAKE_CURRENT_SOURCE_DIR}/deps/webrtc/lib/obj)
+# 假设你的目标是 my_app 或 my_library
+# target_link_libraries(RoomClient
+#     PRIVATE
+#     absl_flags_parse                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
+#     base_native_additions_objc
+#     base_objc
+#     callback_logger_objc
+#     default_codec_factory_objc
+#     file_logger_objc
+#     helpers_objc
+#     media_constraints
+#     mediaconstraints_objc
+#     mediasource_objc
+#     metal_objc
+#     native_api
+#     native_video
+#     peerconnectionfactory_base_objc
+#     ui_objc
+#     video_objc
+#     video_toolbox_cc
+#     videocapture_objc
+#     videocodec_objc
+#     videoframebuffer_objc
+#     videorendereradapter_objc
+#     videosource_objc
+#     videotoolbox_objc
+#     vp8
+#     vp9
+#     vpx_codec_constants
+#     wrapped_native_codec_objc
+# )
 elseif(WIN32)
     target_compile_definitions(RoomClient PRIVATE
         WEBRTC_WIN
@@ -261,25 +317,6 @@ elseif(WIN32)
     )
 endif()
 
-# ——————————————————————————————————————————————
-# 6) Link libraries
-# ——————————————————————————————————————————————
-# Link QtCore statically
-target_link_libraries(RoomClient
-    PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/deps/webrtc/lib/libwebrtc.a
-    ${CMAKE_CURRENT_SOURCE_DIR}/deps/webrtc/lib/libsdk_combined.a
-    ${CMAKE_CURRENT_SOURCE_DIR}/deps/libssl/lib/libcrypto.a
-    ${CMAKE_CURRENT_SOURCE_DIR}/deps/libssl/lib/libssl.a
-    "-framework AppKit"
-    "-framework CoreGraphics"
-    "-framework ApplicationServices"
-    "-framework CoreMedia"
-    "-framework CoreVideo"
-    "-framework CoreFoundation"
-    "-framework CoreAudio"
-    "-framework AudioToolbox"
-    "-framework AVFoundation")
 
 # ——————————————————————————————————————————————
 # 7) Output directory

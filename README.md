@@ -20,3 +20,14 @@
 
 * Qt Creator
 * Open Mediasoup.pro using Qt Creator.
+
+# macOS 下的使用，为了对齐m88以前的版本；
+我在WebRTC的api/video/video_frame.h中添加了如下代码：
+```cpp
+VideoFrame::Builder& VideoFrame::Builder::set_update_rect(
+    const VideoFrame::UpdateRect& update_rect) {
+  update_rect_ = update_rect;
+  return *this;
+}
+```
+对应以前的老版本；
