@@ -1,168 +1,191 @@
 #ifndef ROOMCLIENT_SERVICE_MEDIA_CONTROLLER_H_
 #define ROOMCLIENT_SERVICE_MEDIA_CONTROLLER_H_
 
-#include <memory>
+#include "Consumer.hpp"
+#include "DataConsumer.hpp"
+#include "DataProducer.hpp"
+#include "Producer.hpp"
 #include "i_media_controller.h"
 #include "i_media_controller_observer.h"
 #include "i_signaling_observer.h"
-#include "utils/universal_observable.hpp"
-#include "Producer.hpp"
-#include "DataProducer.hpp"
-#include "Consumer.hpp"
-#include "DataConsumer.hpp"
 #include "options.h"
 #include "signaling_models.h"
+#include "utils/universal_observable.hpp"
+#include <memory>
 
-namespace mediasoupclient
-{
-    class SendTransport;
-    class RecvTransport;
-}
+namespace vi {
 
-namespace vi
-{
+class IMediasoupApi;
+class MacTrackSource;
 
-    class IMediasoupApi;
-    class MacTrackSource;
+class MediaController : public IMediaController,
+                        public ISignalingObserver,
+                        public mediasoupclient::Producer::Listener,
+                        public mediasoupclient::Consumer::Listener,
+                        public mediasoupclient::DataProducer::Listener,
+                        public mediasoupclient::DataConsumer::Listener,
+                        public UniversalObservable<IMediaControllerObserver>,
+                        public std::enable_shared_from_this<MediaController> {
+public:
+  MediaController(
+      std::shared_ptr<IMediasoupApi> &mediasoupApi,
+      rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> &pcf,
+      std::shared_ptr<Options> &options);
 
-    class MediaController : public IMediaController,
-                            public ISignalingObserver,
-                            public mediasoupclient::Producer::Listener,
-                            public mediasoupclient::Consumer::Listener,
-                            public mediasoupclient::DataProducer::Listener,
-                            public mediasoupclient::DataConsumer::Listener,
-                            public UniversalObservable<IMediaControllerObserver>,
-                            public std::enable_shared_from_this<MediaController>
-    {
-    public:
-        MediaController(std::shared_ptr<IMediasoupApi> &mediasoupApi,
-                        std::shared_ptr<mediasoupclient::SendTransport> &sendTransport,
-                        std::shared_ptr<mediasoupclient::RecvTransport> &recvTransport,
-                        rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> &pcf,
-                        std::shared_ptr<Options> &options);
+  ~MediaController();
 
-        ~MediaController();
+  void init() override;
 
-        void init() override;
+  void destroy() override;
 
-        void destroy() override;
+  void addObserver(std::shared_ptr<IMediaControllerObserver> observer) override;
 
-        void addObserver(std::shared_ptr<IMediaControllerObserver> observer) override;
+  void
+  removeObserver(std::shared_ptr<IMediaControllerObserver> observer) override;
 
-        void removeObserver(std::shared_ptr<IMediaControllerObserver> observer) override;
+  void enableAudio(bool enabled) override;
 
-        void enableAudio(bool enabled) override;
+  bool isAudioEnabled() override;
 
-        bool isAudioEnabled() override;
+  void muteAudio(bool muted) override;
 
-        void muteAudio(bool muted) override;
+  bool isAudioMuted() override;
 
-        bool isAudioMuted() override;
+  void enableVideo(bool enabled) override;
 
-        void enableVideo(bool enabled) override;
+  bool isVideoEnabled() override;
 
-        bool isVideoEnabled() override;
+  void muteAudio(const std::string &id, bool muted) override;
 
-        void muteAudio(const std::string &id, bool muted) override;
+  bool isAudioMuted(const std::string &id) override;
 
-        bool isAudioMuted(const std::string &id) override;
+  void setSendTransport(
+      std::shared_ptr<mediasoupclient::SendTransport> transport) override;
 
-    protected:
-        // Producer::Listener
-        void OnTransportClose(mediasoupclient::Producer *producer) override;
+  void setRecvTransport(
+      std::shared_ptr<mediasoupclient::RecvTransport> transport) override;
 
-        // Consumer::Listener
-        void OnTransportClose(mediasoupclient::Consumer *consumer) override;
+protected:
+  // Producer::Listener
+  void OnTransportClose(mediasoupclient::Producer *producer) override;
 
-        // DataProducer::Listener
-        void OnOpen(mediasoupclient::DataProducer *dataProducer) override;
+  // Consumer::Listener
+  void OnTransportClose(mediasoupclient::Consumer *consumer) override;
 
-        void OnClose(mediasoupclient::DataProducer *dataProducer) override;
+  // DataProducer::Listener
+  void OnOpen(mediasoupclient::DataProducer *dataProducer) override;
 
-        void OnBufferedAmountChange(mediasoupclient::DataProducer *dataProducer, uint64_t sentDataSize) override;
+  void OnClose(mediasoupclient::DataProducer *dataProducer) override;
 
-        void OnTransportClose(mediasoupclient::DataProducer *dataProducer) override;
+  void OnBufferedAmountChange(mediasoupclient::DataProducer *dataProducer,
+                              uint64_t sentDataSize) override;
 
-        // DataConsumer::Listener
-        void OnConnecting(mediasoupclient::DataConsumer *dataConsumer) override;
+  void OnTransportClose(mediasoupclient::DataProducer *dataProducer) override;
 
-        void OnOpen(mediasoupclient::DataConsumer *dataConsumer) override;
+  // DataConsumer::Listener
+  void OnConnecting(mediasoupclient::DataConsumer *dataConsumer) override;
 
-        void OnClosing(mediasoupclient::DataConsumer *dataConsumer) override;
+  void OnOpen(mediasoupclient::DataConsumer *dataConsumer) override;
 
-        void OnClose(mediasoupclient::DataConsumer *dataConsumer) override;
+  void OnClosing(mediasoupclient::DataConsumer *dataConsumer) override;
 
-        void OnMessage(mediasoupclient::DataConsumer *dataConsumer, const webrtc::DataBuffer &buffer) override;
+  void OnClose(mediasoupclient::DataConsumer *dataConsumer) override;
 
-        void OnTransportClose(mediasoupclient::DataConsumer *dataConsumer) override;
+  void OnMessage(mediasoupclient::DataConsumer *dataConsumer,
+                 const webrtc::DataBuffer &buffer) override;
 
-    protected:
-        // ISignalingObserver
-        void onOpened() override;
+  void OnTransportClose(mediasoupclient::DataConsumer *dataConsumer) override;
 
-        void onClosed() override;
+protected:
+  // ISignalingObserver
+  void onOpened() override;
 
-        // Request from SFU
-        void onNewConsumer(std::shared_ptr<signaling::NewConsumerRequest> request) override;
+  void onClosed() override;
 
-        void onNewDataConsumer(std::shared_ptr<signaling::NewDataConsumerRequest> request) override;
+  // Request from SFU
+  void onNewConsumer(
+      std::shared_ptr<signaling::NewConsumerRequest> request) override;
 
-        // Notification from SFU
-        void onProducerScore(std::shared_ptr<signaling::ProducerScoreNotification> notification) override;
+  void onNewDataConsumer(
+      std::shared_ptr<signaling::NewDataConsumerRequest> request) override;
 
-        void onConsumerScore(std::shared_ptr<signaling::ConsumerScoreNotification> notification) override;
+  // Notification from SFU
+  void onProducerScore(std::shared_ptr<signaling::ProducerScoreNotification>
+                           notification) override;
 
-        void onNewPeer(std::shared_ptr<signaling::NewPeerNotification> notification) override;
+  void onConsumerScore(std::shared_ptr<signaling::ConsumerScoreNotification>
+                           notification) override;
 
-        void onPeerClosed(std::shared_ptr<signaling::PeerClosedNotification> notification) override;
+  void onNewPeer(
+      std::shared_ptr<signaling::NewPeerNotification> notification) override;
 
-        void onPeerDisplayNameChanged(std::shared_ptr<signaling::PeerDisplayNameChangedNotification> notification) override;
+  void onPeerClosed(
+      std::shared_ptr<signaling::PeerClosedNotification> notification) override;
 
-        void onConsumerPaused(std::shared_ptr<signaling::ConsumerPausedNotification> notification) override;
+  void onPeerDisplayNameChanged(
+      std::shared_ptr<signaling::PeerDisplayNameChangedNotification>
+          notification) override;
 
-        void onConsumerResumed(std::shared_ptr<signaling::ConsumerResumedNotification> notification) override;
+  void onConsumerPaused(std::shared_ptr<signaling::ConsumerPausedNotification>
+                            notification) override;
 
-        void onConsumerClosed(std::shared_ptr<signaling::ConsumerClosedNotification> notification) override;
+  void onConsumerResumed(std::shared_ptr<signaling::ConsumerResumedNotification>
+                             notification) override;
 
-        void onConsumerLayersChanged(std::shared_ptr<signaling::ConsumerLayersChangedNotification> notification) override;
+  void onConsumerClosed(std::shared_ptr<signaling::ConsumerClosedNotification>
+                            notification) override;
 
-        void onDataConsumerClosed(std::shared_ptr<signaling::DataConsumerClosedNotification> notification) override;
+  void onConsumerLayersChanged(
+      std::shared_ptr<signaling::ConsumerLayersChangedNotification>
+          notification) override;
 
-        void onDownlinkBwe(std::shared_ptr<signaling::DownlinkBweNotification> notification) override;
+  void onDataConsumerClosed(
+      std::shared_ptr<signaling::DataConsumerClosedNotification> notification)
+      override;
 
-        void onActiveSpeaker(std::shared_ptr<signaling::ActiveSpeakerNotification> notification) override;
+  void onDownlinkBwe(std::shared_ptr<signaling::DownlinkBweNotification>
+                         notification) override;
 
-    private:
-        void configVideoEncodings();
+  void onActiveSpeaker(std::shared_ptr<signaling::ActiveSpeakerNotification>
+                           notification) override;
 
-        void createNewConsumer(std::shared_ptr<signaling::NewConsumerRequest> request);
+private:
+  void configVideoEncodings();
 
-        void createNewDataConsumer(std::shared_ptr<signaling::NewDataConsumerRequest> request);
+  void
+  createNewConsumer(std::shared_ptr<signaling::NewConsumerRequest> request);
 
-        void onCamProducerClosed();
+  void createNewDataConsumer(
+      std::shared_ptr<signaling::NewDataConsumerRequest> request);
 
-    private:
-        std::shared_ptr<IMediasoupApi> &_mediasoupApi;
+  void onCamProducerClosed();
 
-        std::shared_ptr<mediasoupclient::SendTransport> &_sendTransport;
-        std::shared_ptr<mediasoupclient::RecvTransport> &_recvTransport;
+private:
+  std::shared_ptr<IMediasoupApi> &_mediasoupApi;
 
-        rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> &_peerConnectionFactory;
+  std::shared_ptr<mediasoupclient::SendTransport> _sendTransport;
+  std::shared_ptr<mediasoupclient::RecvTransport> _recvTransport;
 
-        std::shared_ptr<Options> &_options;
+  rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface>
+      &_peerConnectionFactory;
 
-        std::vector<webrtc::RtpEncodingParameters> _encodings;
+  std::shared_ptr<Options> &_options;
 
-        std::shared_ptr<mediasoupclient::Producer> _micProducer;
-        std::shared_ptr<mediasoupclient::Producer> _camProducer;
-        rtc::scoped_refptr<MacTrackSource> _capturerSource;
+  std::vector<webrtc::RtpEncodingParameters> _encodings;
 
-        // key: consumer id
-        std::unordered_map<std::string, std::shared_ptr<mediasoupclient::Consumer>> _consumerMap;
+  std::shared_ptr<mediasoupclient::Producer> _micProducer;
+  std::shared_ptr<mediasoupclient::Producer> _camProducer;
+  rtc::scoped_refptr<MacTrackSource> _capturerSource;
 
-        // key: data consumer id
-        std::unordered_map<std::string, std::shared_ptr<mediasoupclient::DataConsumer>> _dataConsumerMap;
-    };
+  // key: consumer id
+  std::unordered_map<std::string, std::shared_ptr<mediasoupclient::Consumer>>
+      _consumerMap;
 
-}
+  // key: data consumer id
+  std::unordered_map<std::string,
+                     std::shared_ptr<mediasoupclient::DataConsumer>>
+      _dataConsumerMap;
+};
+
+} // namespace vi
 #endif // ROOMCLIENT_SERVICE_MEDIA_CONTROLLER_H_

@@ -45,3 +45,5 @@ UI/UI.APS
 .DS_Store
 *build-*
 RoomClient/build/*
+App/App.pro.user
+RoomClient/CMakeLists.txt.user

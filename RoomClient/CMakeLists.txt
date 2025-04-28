@@ -16,8 +16,6 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     add_compile_options(-Wno-sign-conversion -Wno-sign-compare -frtti -fexceptions)
 endif()
 
-
-
 # ——————————————————————————————————————————————
 # 2) Find Qt (Core only, no GUI)
 # ——————————————————————————————————————————————
@@ -34,7 +32,6 @@ set(ROOM_CLIENT_SOURCES
     opengl/video_shader.cpp
     service/base_video_capturer.cc
     service/component_factory.cpp
-    service/mac_capturer.mm
     service/media_controller.cpp
     service/mediasoup_api.cpp
     service/participant.cpp
@@ -44,7 +41,7 @@ set(ROOM_CLIENT_SOURCES
     service/service_factory.cpp
     service/windows_capture.cpp
     utils/bad_any_cast.cc
-    utils/notification_center.cpp
+    # utils/notification_center.cpp
 
     # utils/notification_keys.cpp
     utils/universal_observable.cpp
@@ -56,13 +53,77 @@ set(ROOM_CLIENT_SOURCES
     websocket/connection_metadata.cpp
     websocket/websocket_endpoint.cpp
     websocket/websocket_transport.cpp
+
+   
+)
+
+
+list(APPEND ROOM_CLIENT_SOURCES
+    logger/rtc_log_sink.h
+    logger/u_logger.h
+    opengl/gl_defines.h
+    opengl/i420_texture_cache.h
+    opengl/video_shader.h
+    service/i_component_factory.h
+    service/i_engine_event_handler.h
+    service/i_media_controller_observer.h
+    service/i_media_controller.h
+    service/i_mediasoup_api.h
+    service/i_participant_controller_observer.h
+    service/i_participant_controller.h
+    service/i_participant.h
+    service/i_room_client.h
+    service/i_room_client_observer.h
+    service/i_service_factory.hpp
+    service/i_service.hpp
+    service/i_signaling_observer.h
+    service/i_signaling_client.h
+    service/base_video_capturer.h
+    service/component_factory.h
+    service/media_controller.h
+    service/mediasoup_api.h
+    service/participant.h
+    service/participant_controller.h
+    service/room_client.h
+    service/signaling_client.h
+    service/service_factory.hpp
+    service/windows_capture.h
+    service/options.h
+    # utils/bad_any_cast.h
+
+    # utils/notification_keys.hpp
+    # utils/notification_center.hpp
+    # utils/notification.hpp
+    utils/i_notification.h
+    utils/i_observer.hpp
+    utils/universal_observable.hpp
+
+    # utils/universal_observable.h
+    utils/sdp_utils.h
+    utils/string_utils.h
+    utils/task_scheduler.h
+    utils/thread_provider.h
+    utils/interface_proxy.h
+    websocket/i_connection_observer.h
+    websocket/i_transport_observer.h
+    websocket/i_transport.h
+    websocket/websocket_request.h
+    websocket/connection_metadata.h
+    websocket/websocket_endpoint.h
+    websocket/websocket_transport.h
 )
 
 # 条件引入平台特定文件
 if(APPLE)
-    list(APPEND ROOM_CLIENT_SOURCES service/mac_capturer.mm)
+    list(APPEND ROOM_CLIENT_SOURCES
+        service/mac_capturer.h
+        service/mac_capturer.mm
+    )
 elseif(WIN32)
-    list(APPEND ROOM_CLIENT_SOURCES service/windows_capture.cpp)
+    list(APPEND ROOM_CLIENT_SOURCES
+        service/windows_capture.h
+        service/windows_capture.cpp
+    )
 endif()
 
 # 定义编译选项 是使用 libmediasoupclient 的源码 还是使用编译好的库
@@ -77,6 +138,7 @@ if(USE_LIB_MEDIASOUP_CLIENT_SOURCE)
     set(mediasoupclient_VERSION_MAJOR 3)
     set(mediasoupclient_VERSION_MINOR 2)
     set(mediasoupclient_VERSION_PATCH 0)
+   
     # Configure a header file to pass the version.
     configure_file(
         "${CMAKE_CURRENT_SOURCE_DIR}/deps/libmediasoupclient/version.hpp.in"
@@ -101,6 +163,20 @@ if(USE_LIB_MEDIASOUP_CLIENT_SOURCE)
         deps/libmediasoupclient/src/sdp/MediaSection.cpp
         deps/libmediasoupclient/src/sdp/RemoteSdp.cpp
         deps/libmediasoupclient/src/sdp/Utils.cpp
+        deps/libmediasoupclient/include/Consumer.hpp
+        deps/libmediasoupclient/include/Device.hpp
+        deps/libmediasoupclient/include/Handler.hpp
+        deps/libmediasoupclient/include/Logger.hpp
+        deps/libmediasoupclient/include/MediaSoupClientErrors.hpp
+        deps/libmediasoupclient/include/PeerConnection.hpp
+        deps/libmediasoupclient/include/Producer.hpp
+        deps/libmediasoupclient/include/Transport.hpp
+        deps/libmediasoupclient/include/mediasoupclient.hpp
+        deps/libmediasoupclient/include/ortc.hpp
+        deps/libmediasoupclient/include/scalabilityMode.hpp
+        deps/libmediasoupclient/include/sdp/MediaSection.hpp
+        deps/libmediasoupclient/include/sdp/RemoteSdp.hpp
+        deps/libmediasoupclient/include/sdp/Utils.hpp
     )
 endif() # 修复：添加缺失的 endif()
 
@@ -129,7 +205,7 @@ if(USE_LIB_WEBSOCKETPP_SOURCE)
     # ...
 
     # # Link to the created library asio::asio or asio
-    # target_link_libraries(RoomClient PRIVATE asio::asio)
+    # target_link_libraries(${PROJECT_NAME} PRIVATE asio::asio)
     # set(LIBWEBRTC_INCLUDE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/deps/webrtc/include/webrtc" CACHE STRING "libwebrtc include path")
     # set(LIBWEBRTC_BINARY_PATH "" CACHE STRING "libwebrtc binary path")
     # add_subdirectory(deps/libmediasoupclient)
@@ -200,22 +276,22 @@ option(RAPIDJSON_BUILD_CXX17 "Build rapidjson with C++17" ON)
 
 add_subdirectory(deps/rapidjson)
 add_subdirectory(deps/spdlog)
+
 # add_subdirectory(deps/asio)
 # add_subdirectory(deps/websocketpp)
-
-add_library(RoomClient STATIC ${ROOM_CLIENT_SOURCES})
+add_library(${PROJECT_NAME} STATIC ${ROOM_CLIENT_SOURCES})
 
 # 对 Debug 生效，添加 -O0 -g；对 Release 生效，使用 -O3
-target_compile_options(RoomClient PRIVATE
+target_compile_options(${PROJECT_NAME} PRIVATE
     "$<$<CONFIG:Debug>:-O0;-g>"
     "$<$<CONFIG:Release>:-O3>"
 )
 
 # 仅对 Debug 生效
-# target_compile_options(RoomClient PRIVATE
+# target_compile_options(${PROJECT_NAME} PRIVATE
 #     "$<$<CONFIG:Debug>:-fno-inline;-fno-inline-small-functions;-fno-lto>"
 # )
-# set_target_properties(RoomClient PROPERTIES
+# set_target_properties(${PROJECT_NAME} PROPERTIES
 #     INTERPROCEDURAL_OPTIMIZATION_RELEASE OFF
 # )
 
@@ -237,14 +313,15 @@ set(WEBRTC_INCLUDE_DIRS
     ${CMAKE_CURRENT_SOURCE_DIR}/deps/webrtc/include/webrtc/sdk/objc
     ${CMAKE_CURRENT_SOURCE_DIR}/deps/webrtc/include/webrtc/sdk/objc/base
 )
+
 # set(JSON_INCLUDE_DIR
-#     ${CMAKE_CURRENT_SOURCE_DIR}/deps/webrtc/include/webrtc
-#     ${CMAKE_CURRENT_SOURCE_DIR}/deps/webrtc/include/webrtc/third_party
-#     ${CMAKE_CURRENT_SOURCE_DIR}/deps/webrtc/include/webrtc/sdk/objc
+# ${CMAKE_CURRENT_SOURCE_DIR}/deps/webrtc/include/webrtc
+# ${CMAKE_CURRENT_SOURCE_DIR}/deps/webrtc/include/webrtc/third_party
+# ${CMAKE_CURRENT_SOURCE_DIR}/deps/webrtc/include/webrtc/sdk/objc
 # )
 
 # 使用 target_include_directories 设置头文件路径
-target_include_directories(RoomClient
+target_include_directories(${PROJECT_NAME}
     PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
     PRIVATE
@@ -260,10 +337,15 @@ target_include_directories(RoomClient
 # ——————————————————————————————————————————————
 # 5) Compile‑time definitions (matches your DEFINES in .pro)
 # ——————————————————————————————————————————————
-
+target_compile_definitions(${PROJECT_NAME}
+    PRIVATE MSC_LOG_TRACE=1
+)
+target_compile_definitions(${PROJECT_NAME}
+    PRIVATE MSC_LOG_DEV=1
+)
 # 编译时定义
 if(APPLE)
-    target_compile_definitions(RoomClient PRIVATE
+    target_compile_definitions(${PROJECT_NAME} PRIVATE
         WEBRTC_POSIX
         WEBRTC_MAC
         ASIO_STANDALONE
@@ -275,7 +357,7 @@ if(APPLE)
     # 6) Link libraries
     # ——————————————————————————————————————————————
     # Link QtCore statically
-    target_link_libraries(RoomClient
+    target_link_libraries(${PROJECT_NAME}
         PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/deps/webrtc/lib/libwebrtc.a
         ${CMAKE_CURRENT_SOURCE_DIR}/deps/webrtc/lib/libsdk_combined.a
@@ -293,7 +375,7 @@ if(APPLE)
     # 添加库目录
 # link_directories(${CMAKE_CURRENT_SOURCE_DIR}/deps/webrtc/lib/obj)
 # 假设你的目标是 my_app 或 my_library
-# target_link_libraries(RoomClient
+# target_link_libraries(${PROJECT_NAME}
 #     PRIVATE
 #     absl_flags_parse                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
 #     base_native_additions_objc
@@ -324,7 +406,7 @@ if(APPLE)
 #     wrapped_native_codec_objc
 # )
 elseif(WIN32)
-    target_compile_definitions(RoomClient PRIVATE
+    target_compile_definitions(${PROJECT_NAME} PRIVATE
         WEBRTC_WIN
         ASIO_STANDALONE
         _WIN32_WINNT=0x0601
@@ -336,11 +418,11 @@ endif()
 # 7) Output directory
 # ——————————————————————————————————————————————
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    set_target_properties(RoomClient PROPERTIES
+    set_target_properties(${PROJECT_NAME} PROPERTIES
         ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/Debug"
     )
 else()
-    set_target_properties(RoomClient PROPERTIES
+    set_target_properties(${PROJECT_NAME} PROPERTIES
         ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/Release"
     )
 endif()

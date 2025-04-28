@@ -6,6 +6,7 @@ CONFIG += c++17
 # 仅在 macOS 下生效时：
 macx {
      CONFIG += app_bundle
+#     CONFIG += console
      DEFINES += WEBRTC_POSIX WEBRTC_MAC ASIO_STANDALONE GL_SILENCE_DEPRECATION
      #QT_NO_KEYWORDS
 
@@ -22,9 +23,9 @@ macx {
 
      TARGET_APP_PATH = $$OUT_PWD/$${TARGET}.app/Contents/
 
-     ENTITLEMENTS_FILE = $$PWD/../RoomClient/deps/macos/App.entitlements
-    # 复制 entitlements 文件
-     QMAKE_POST_LINK += $$escape_expand(\n\t)cp $$ENTITLEMENTS_FILE $$TARGET_APP_PATH
+     ENTITLEMENTS_FILE = $$PWD/../RoomClient/deps/macos/App.entitlemen
+     ENTITLEMENTS_DEST = $$OUT_PWD/$${TARGET}.app/Contents/
+     QMAKE_POST_LINK += "mkdir -p \"$${ENTITLEMENTS_DEST}\" && cp \"$${ENTITLEMENTS_FILE}\" \"$${ENTITLEMENTS_DEST}\""
      QMAKE_CXXFLAGS += -fobjc-arc -objc
      QMAKE_OBJCFLAGS += -fobjc-arc
      HEADERS += \

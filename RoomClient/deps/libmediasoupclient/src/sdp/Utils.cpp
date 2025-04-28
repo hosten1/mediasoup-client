@@ -410,6 +410,20 @@ namespace mediasoupclient
 
 				return ssrcCnameLine["value"].get<std::string>();
 			}
+			std::string getMid(const json& localSdpObject, const std::string& trackKind,const std::string& mediaSectionIdx){
+				// 遍历 localSdpObject["media"] 找到当前 track 对应的 media，然后找到 mid
+				for (const auto& media : localSdpObject["media"])
+				{
+					auto kind = media["type"].get<std::string>();
+					if (kind == trackKind)
+					{
+					   return media["mid"].get<std::string>();
+					}
+				}
+
+				return mediaSectionIdx;
+			}
+
 
 			json getRtpEncodings(const json& offerMediaObject)
 			{

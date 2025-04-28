@@ -17,6 +17,7 @@ namespace mediasoupclient
 			void fillRtpParametersForTrack(json& rtpParameters, const json& sdpObject, const std::string& mid);
 			void addLegacySimulcast(json& offerMediaObject, uint8_t numStreams);
 			std::string getCname(const json& offerMediaObject);
+			std::string getMid(const json& localSdpObject, const std::string& trackKind,const std::string& mediaSectionIdx);
 			json getRtpEncodings(const json& offerMediaObject);
 			void applyCodecParameters(const json& offerRtpParameters, json& answerMediaObject);
 		} // namespace Utils

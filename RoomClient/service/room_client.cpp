@@ -3,6 +3,7 @@
 #include "DataConsumer.hpp"
 #include "DataProducer.hpp"
 #include "Device.hpp"
+#include "Logger.hpp"
 #include "PeerConnection.hpp"
 #include "Producer.hpp"
 #include "api/audio_codecs/builtin_audio_decoder_factory.h"
@@ -39,6 +40,14 @@ std::string getProtooUrl(const std::string &hostname, uint16_t port,
 } // namespace
 
 namespace vi {
+class DefaultClientLogHandler
+    : public mediasoupclient::Logger::LogHandlerInterface {
+  void OnLog(mediasoupclient::Logger::LogLevel level, char *payload,
+             size_t len) override {
+    DLOG("mediasoupclient log: {}", std::string(payload, len));
+  }
+};
+
 class RoomClientImpl : public ISignalingObserver,
                        public mediasoupclient::SendTransport::Listener,
                        public mediasoupclient::RecvTransport::Listener,
@@ -68,8 +77,7 @@ public:
 
     if (!_mediaController.lock()) {
       auto mediaController = std::make_shared<MediaController>(
-          _mediasoupApi, _sendTransport, _recvTransport, _peerConnectionFactory,
-          _options);
+          _mediasoupApi, _peerConnectionFactory, _options);
       _mediaControllerProxy =
           IMediaControllerProxy::create(mediaController, "mediasoup-client");
       _mediaControllerProxy->init();
@@ -205,8 +213,10 @@ public:
   std::shared_ptr<IParticipantController> getParticipantController() {
     return _participantControllerProxy;
   }
+  void joinRoom() {}
 
   void getRouterRtpCapabilities() {
+    DLOG("lym getRouterRtpCapabilities");
     if (!_mediasoupApi) {
       DLOG("_mediasoupApi is null");
       return;
@@ -262,9 +272,15 @@ public:
     }
   }
 
-  void createSendTransport() { requestCreateTransport(false, true, false); }
+  void createSendTransport() {
+    DLOG("lym createSendTransport");
+    requestCreateTransport(false, true, false);
+  }
 
-  void createRecvTransport() { requestCreateTransport(false, false, true); }
+  void createRecvTransport() {
+    DLOG("lym createSendTransport");
+    requestCreateTransport(false, false, true);
+  }
 
   void requestCreateTransport(bool forceTcp, bool producing, bool consuming) {
     if (!_mediasoupApi) {
@@ -277,8 +293,9 @@ public:
     if (_options->datachannel.value_or(false)) {
       auto caps = _mediasoupDevice->GetSctpCapabilities();
       std::string json(caps.dump().c_str());
-      DLOG("rtpCapabilities: {}", json);
+      DLOG("requestCreateTransport: {}", json);
       if (json.empty()) {
+        DLOG("GetSctpCapabilities failed");
         return;
       }
       std::string err;
@@ -375,16 +392,19 @@ public:
           iceCandidates, dtlsParameters, sctpParameters,
           _peerConnectionOptions.get());
       _sendTransport.reset(sendTransport);
+      _mediaControllerProxy->setSendTransport(_sendTransport);
     } else if (consuming) {
       auto recvTransport = _mediasoupDevice->CreateRecvTransport(
           this, transportInfo->data->id.value_or(""), iceParameters,
           iceCandidates, dtlsParameters, sctpParameters,
           _peerConnectionOptions.get());
       _recvTransport.reset(recvTransport);
+      _mediaControllerProxy->setRecvTransport(_recvTransport);
     }
   }
 
   void joinImpl() {
+    DLOG("lym joinImpl");
     if (!_mediasoupApi) {
       DLOG("_mediasoupApi is null");
       return;
@@ -713,6 +733,7 @@ public:
   }
 
   void onOpened() {
+    DLOG(" lym onOpened");
     TMgr->thread("mediasoup-client")
         ->PostTask(RTC_FROM_HERE, [wself = weak_from_this()]() {
           auto self = wself.lock();
@@ -827,6 +848,9 @@ RoomClient::RoomClient(std::weak_ptr<IComponentFactory> wcf)
 RoomClient::~RoomClient() { DLOG("~RoomClient()"); }
 std::string RoomClient::initLibMediasoup() {
   mediasoupclient::Initialize();
+  mediasoupclient::Logger::SetLogLevel(
+      mediasoupclient::Logger::LogLevel::LOG_TRACE);
+  mediasoupclient::Logger::SetHandler(new DefaultClientLogHandler());
 
   return mediasoupclient::Version().c_str();
 }

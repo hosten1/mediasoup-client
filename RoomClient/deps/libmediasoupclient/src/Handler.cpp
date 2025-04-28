@@ -8,6 +8,9 @@
 #include "sdptransform.hpp"
 #include "sdp/Utils.hpp"
 #include <cinttypes> // PRIu64, etc
+#include <iostream>
+#include <algorithm> // for std::find_if
+
 
 using json = nlohmann::json;
 
@@ -231,24 +234,29 @@ namespace mediasoupclient
 			this->pc->SetLocalDescription(PeerConnection::SdpType::OFFER, offer);
 
 			// We can now get the transceiver.mid.
-			localId = transceiver->mid().value();
-
+            // localId = transceiver->mid().value();
+			// 遍历localSdpObject["media"] 找到当前track对应的media，然后找到mid
+			localId = Sdp::Utils::getMid(localSdpObject, track->kind(), std::to_string(mediaSectionIdx.idx));
+        	auto medias = localSdpObject["media"].array();
+        
+//			std::cout << "lym ===> localId:" << localId << std::endl;
+			MSC_DEBUG("lym ==> localId:%s",  localId.c_str());
+           
 			// Set MID.
 			sendingRtpParameters["mid"] = localId;
 		}
 		catch (std::exception& error)
 		{
-            MSC_DEBUG("Caught exception:%s",  error.what());
+            MSC_DEBUG("lym Caught exception:%s",  error.what());
 			// Panic here. Try to undo things.
 			transceiver->SetDirection(webrtc::RtpTransceiverDirection::kInactive);
 			transceiver->sender()->SetTrack(nullptr);
 
-			// throw;
+             throw;
 		}
 
 		auto localSdp       = this->pc->GetLocalDescription();
 		auto localSdpObject = sdptransform::parse(localSdp);
-
 		json& offerMediaObject = localSdpObject["media"][mediaSectionIdx.idx];
 
 		// Set RTCP CNAME.
@@ -313,7 +321,6 @@ namespace mediasoupclient
 		MSC_DEBUG("calling pc->SetRemoteDescription():\n%s", answer.c_str());
 
 		this->pc->SetRemoteDescription(PeerConnection::SdpType::ANSWER, answer);
-
 		// Store in the map.
 		this->mapMidTransceiver[localId] = transceiver;
 
@@ -326,7 +333,7 @@ namespace mediasoupclient
 		return sendResult;
 	}
 
-	Handler::DataChannel SendHandler::SendDataChannel(
+    Handler::DataChannel SendHandler::SendDataChannel(
 	  const std::string& label, webrtc::DataChannelInit dataChannelInit)
 	{
 		MSC_TRACE();
