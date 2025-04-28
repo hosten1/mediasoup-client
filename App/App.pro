@@ -1,31 +1,31 @@
+#CONFIG(debug, debug | release) {
+#    DESTDIR = $$PWD/../RoomClient/Debug
+#} else {
+#    DESTDIR = $$PWD/../RoomClient/Release
+#}
+
 QT       += core gui opengl openglwidgets
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 CONFIG += c++17
-# 仅在 macOS 下生效时：
+# --- 3. macOS special settings ---
 macx {
      CONFIG += app_bundle
-#     CONFIG += console
      DEFINES += WEBRTC_POSIX WEBRTC_MAC ASIO_STANDALONE GL_SILENCE_DEPRECATION
-     #QT_NO_KEYWORDS
 
-     #QMAKE_INFO_PLIST +=  $${TARGET}/Info.plist
-     #QMAKE_POST_LINK += sed -i -e "s/@VERSION@/$$VERSION/g" "../Debug/$${TARGET}.app/Contents/Info.plist";
-
-     # You can make your code fail to compile if it uses deprecated APIs.
-     # In order to do so, uncomment the following line.
-     #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
      QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.7
      QMAKE_CFLAGS += -mmacosx-version-min=10.7
      QMAKE_CXXFLAGS += -mmacosx-version-min=10.7
      QMAKE_INFO_PLIST = $$PWD/../RoomClient/deps/macos/Info.plist
 
+
+     ENTITLEMENTS_FILE = $$PWD/../RoomClient/deps/macos/App.entitlements
      TARGET_APP_PATH = $$OUT_PWD/$${TARGET}.app/Contents/
 
-     ENTITLEMENTS_FILE = $$PWD/../RoomClient/deps/macos/App.entitlemen
-     ENTITLEMENTS_DEST = $$OUT_PWD/$${TARGET}.app/Contents/
-     QMAKE_POST_LINK += "mkdir -p \"$${ENTITLEMENTS_DEST}\" && cp \"$${ENTITLEMENTS_FILE}\" \"$${ENTITLEMENTS_DEST}\""
+     # 复制 entitlements 文件
+     QMAKE_POST_LINK += cp $$ENTITLEMENTS_FILE $$TARGET_APP_PATH
+     message(Post link command: $$QMAKE_POST_LINK)
      QMAKE_CXXFLAGS += -fobjc-arc -objc
      QMAKE_OBJCFLAGS += -fobjc-arc
      HEADERS += \
@@ -35,6 +35,12 @@ macx {
            # OpenSSL 依赖
      #     INCLUDEPATH += $$PWD/../RoomClient/deps/macos/ssl1.1.1w/include
      #     LIBS += -L$$PWD/../RoomClient/deps/macos/ssl1.1.1w/lib -lssl -lcrypto
+     # GLEW + frameworks
+         LIBS += -L/usr/local/Cellar/glew/2.2.0_1/lib/ -lGLEW
+         LIBS += -framework AudioToolbox -framework CoreAudio -framework AVFoundation -framework CoreMedia -framework CoreVideo
+         LIBS += -framework CoreGraphics -framework ApplicationServices
+         QMAKE_CXXFLAGS += -stdlib=libc++
+         QMAKE_LFLAGS  += -stdlib=libc++
 }
 
 #在 Qt 项目里遇到第三方库（比如 sigslot）也用到 emit、signals、slots 这些名字时，就会和 Qt 的 moc 关键字冲突，报出类似：
@@ -62,23 +68,13 @@ mac {
 }
 LIBS += -L$$PWD/../RoomClient/deps/libssl/lib/ -lcrypto
 LIBS += -L$$PWD/../RoomClient/deps/libssl/lib/ -lssl
-mac {
-    LIBS += -L/usr/local/Cellar/glew/2.2.0_1/lib/ -lGLEW
-    LIBS += -framework AudioToolbox -framework CoreAudio -framework AVFoundation -framework CoreMedia -framework CoreVideo
-    LIBS += -framework CoreGraphics \
-            -framework ApplicationServices
-    QMAKE_CXXFLAGS += -stdlib=libc++
-    QMAKE_LFLAGS  += -stdlib=libc++
-}
 
 
 CONFIG(debug, debug | release) {
-   DESTDIR = $$PWD/../RoomClient/Debug
    LIBS += -L$$PWD/../RoomClient/Debug -lRoomClient
 
 }
 else {
-    DESTDIR = $$PWD/../RoomClient/Release
     LIBS += -L$$PWD/../RoomClient/Release -lRoomClient
 
 }
