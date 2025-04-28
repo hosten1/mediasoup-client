@@ -212,7 +212,7 @@ namespace mediasoupclient
 		if (!transceiver)
 			MSC_THROW_ERROR("error creating transceiver");
 
-		transceiver->SetDirection(webrtc::RtpTransceiverDirection::kSendOnly);
+        webrtc::RTCError error = transceiver->SetDirectionWithError(webrtc::RtpTransceiverDirection::kSendOnly);
 
 		std::string offer;
 		std::string localId;
@@ -654,16 +654,41 @@ namespace mediasoupclient
 		// May throw.
 		this->pc->SetLocalDescription(PeerConnection::SdpType::ANSWER, answer);
 
-		auto transceivers  = this->pc->GetTransceivers();
-		auto transceiverIt = std::find_if(
-		  transceivers.begin(), transceivers.end(), [&localId](webrtc::RtpTransceiverInterface* t) {
-			  return t->mid() == localId;
-		  });
+		std::vector<rtc::scoped_refptr<webrtc::RtpTransceiverInterface>> transceivers = this->pc->GetTransceivers();
 
-		if (transceiverIt == transceivers.end())
-			MSC_THROW_ERROR("new RTCRtpTransceiver not found");
+		if (transceivers.empty()) {
+			MSC_THROW_ERROR("No transceivers found");
+		}
+		// 改成for循环
+		rtc::scoped_refptr<webrtc::RtpTransceiverInterface> transceiver;
+		for (rtc::scoped_refptr<webrtc::RtpTransceiverInterface> trans : transceivers) {
+//            absl::optional<std::string> mid_opt = trans->mid();
+            // if (mid_opt.has_value() && mid_opt.value() == localId) {
+			// 	transceiver = trans;
+			// 	break;
+			// }
+			std::string mid = trans->mid_std();
+			if (mid == localId) {
+				transceiver = trans;
+				break;
+			}
+		}
+		if (!transceiver) {
+			MSC_THROW_ERROR("No transceiver found with mid: %s", localId.c_str());
+		}
 
-		auto& transceiver = *transceiverIt;
+
+		// auto transceiverIt = std::find_if(
+		// transceivers.begin(), transceivers.end(), [&localId](webrtc::RtpTransceiverInterface* t) {
+		// 	auto mid = t->mid();
+		// 	return mid.has_value() && mid.value() == localId;
+		// });
+
+		// if (transceiverIt == transceivers.end()) {
+		// 	MSC_THROW_ERROR("No transceiver found with mid: %s", localId.c_str());
+		// }
+
+		// auto& transceiver = transceiverT;
 
 		// Store in the map.
 		this->mapMidTransceiver[localId] = transceiver;

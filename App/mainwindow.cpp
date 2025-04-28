@@ -102,7 +102,7 @@ void MainWindow::onVideoTrackRemoved(const std::string &id,
 }
 
 void MainWindow::on_actionJoin_triggered() {
-  RClient->join("43.134.4.247", 4443, "test-room", "jackie", nullptr);
+  RClient->join("43.134.4.247", 4443, "123456", "jackie", nullptr);
 }
 
 void MainWindow::on_actionleave_triggered() {}

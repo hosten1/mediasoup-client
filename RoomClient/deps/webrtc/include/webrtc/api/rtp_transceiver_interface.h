@@ -32,7 +32,7 @@ namespace webrtc {
 // https://w3c.github.io/webrtc-pc/#dom-rtcrtptransceiverinit
 struct RTC_EXPORT RtpTransceiverInit final {
   RtpTransceiverInit();
-  RtpTransceiverInit(const RtpTransceiverInit&);
+  RtpTransceiverInit(const RtpTransceiverInit &);
   ~RtpTransceiverInit();
   // Direction of the RtpTransceiver. See RtpTransceiverInterface::direction().
   RtpTransceiverDirection direction = RtpTransceiverDirection::kSendRecv;
@@ -59,7 +59,7 @@ struct RTC_EXPORT RtpTransceiverInit final {
 // WebRTC specification for RTCRtpTransceiver, the JavaScript analog:
 // https://w3c.github.io/webrtc-pc/#dom-rtcrtptransceiver
 class RTC_EXPORT RtpTransceiverInterface : public rtc::RefCountInterface {
- public:
+public:
   // Media type of the transceiver. Any sender(s)/receiver(s) will have this
   // type as well.
   virtual cricket::MediaType media_type() const = 0;
@@ -69,6 +69,7 @@ class RTC_EXPORT RtpTransceiverInterface : public rtc::RefCountInterface {
   // null. After rollbacks, the value may change from a non-null value to null.
   // https://w3c.github.io/webrtc-pc/#dom-rtcrtptransceiver-mid
   virtual absl::optional<std::string> mid() const = 0;
+  virtual std::string mid_std() const = 0;
 
   // The sender attribute exposes the RtpSender corresponding to the RTP media
   // that may be sent with the transceiver's mid. The sender is always present,
@@ -111,8 +112,8 @@ class RTC_EXPORT RtpTransceiverInterface : public rtc::RefCountInterface {
   // https://w3c.github.io/webrtc-pc/#dom-rtcrtptransceiver-direction
   // TODO(hta): Deprecate SetDirection without error and rename
   // SetDirectionWithError to SetDirection, remove default implementations.
-  RTC_DEPRECATED virtual void SetDirection(
-      RtpTransceiverDirection new_direction);
+  RTC_DEPRECATED virtual void
+  SetDirection(RtpTransceiverDirection new_direction);
   virtual RTCError SetDirectionWithError(RtpTransceiverDirection new_direction);
 
   // The current_direction attribute indicates the current direction negotiated
@@ -145,16 +146,16 @@ class RTC_EXPORT RtpTransceiverInterface : public rtc::RefCountInterface {
   // The SetCodecPreferences method overrides the default codec preferences used
   // by WebRTC for this transceiver.
   // https://w3c.github.io/webrtc-pc/#dom-rtcrtptransceiver-setcodecpreferences
-  virtual RTCError SetCodecPreferences(
-      rtc::ArrayView<RtpCodecCapability> codecs);
+  virtual RTCError
+  SetCodecPreferences(rtc::ArrayView<RtpCodecCapability> codecs);
   virtual std::vector<RtpCodecCapability> codec_preferences() const;
 
   // Readonly attribute which contains the set of header extensions that was set
   // with SetOfferedRtpHeaderExtensions, or a default set if it has not been
   // called.
   // https://w3c.github.io/webrtc-extensions/#rtcrtptransceiver-interface
-  virtual std::vector<RtpHeaderExtensionCapability> HeaderExtensionsToOffer()
-      const;
+  virtual std::vector<RtpHeaderExtensionCapability>
+  HeaderExtensionsToOffer() const;
 
   // The SetOfferedRtpHeaderExtensions method modifies the next SDP negotiation
   // so that it negotiates use of header extensions which are not kStopped.
@@ -163,10 +164,10 @@ class RTC_EXPORT RtpTransceiverInterface : public rtc::RefCountInterface {
       rtc::ArrayView<const RtpHeaderExtensionCapability>
           header_extensions_to_offer);
 
- protected:
+protected:
   ~RtpTransceiverInterface() override = default;
 };
 
-}  // namespace webrtc
+} // namespace webrtc
 
-#endif  // API_RTP_TRANSCEIVER_INTERFACE_H_
+#endif // API_RTP_TRANSCEIVER_INTERFACE_H_
