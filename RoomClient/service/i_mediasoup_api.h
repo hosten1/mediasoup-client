@@ -1,3 +1,12 @@
+/************************************************************************
+* @Copyright: 2021-2024
+* @FileName:
+* @Description: Open source mediasoup room client library
+* @Version: 1.0.0
+* @Author: Jackie Ou
+* @CreateTime: 2021-10-1
+*************************************************************************/
+
 #pragma once
 
 #include <memory>
@@ -18,7 +27,7 @@ public:
 
     virtual void createWebRtcTransport(std::shared_ptr<signaling::CreateWebRtcTransportRequest> request, std::function<void(int32_t, const std::string&, std::shared_ptr<signaling::CreateWebRtcTransportResponse>)> callback) = 0;
 
-    virtual void join(std::shared_ptr<signaling::JoinRequest> request, std::function<void(int32_t, const std::string&, std::shared_ptr<signaling::BasicResponse>)> callback) = 0;
+    virtual void join(std::shared_ptr<signaling::JoinRequest> request, std::function<void(int32_t, const std::string&, std::shared_ptr<signaling::JoinResponse>)> callback) = 0;
 
     virtual void connectWebRtcTransport(std::shared_ptr<signaling::ConnectWebRtcTransportRequest> request, std::function<void(int32_t, const std::string&, std::shared_ptr<signaling::BasicResponse>)> callback) = 0;
 

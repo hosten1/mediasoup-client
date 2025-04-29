@@ -1,103 +1,80 @@
-// thread_provider.cpp
+/************************************************************************
+ * @Copyright: 2021-2024
+ * @FileName:
+ * @Description: Open source mediasoup room client library
+ * @Version: 1.0.0
+ * @Author: Jackie Ou
+ * @CreateTime: 2021-10-1
+ *************************************************************************/
+
 #include "thread_provider.h"
+#include "logger/u_logger.h"
+#include "rtc_base/physical_socket_server.h"
 #include "rtc_base/thread.h" // 头文件依赖移到 .cpp 文件中
-#include <unordered_map>
-#include <mutex>
 #include <atomic>
-#include <string>
 #include <list>
 #include <memory>
+#include <mutex>
+#include <string>
+#include <unordered_map>
 
-namespace vi
-{
+namespace vi {
 
-    class ThreadProviderImpl
-    {
-    public:
-        ThreadProviderImpl() : _mainThread(nullptr), _inited(false), _destroy(false) {}
+ThreadProvider::ThreadProvider() : _inited(false), _destroy(true) {}
 
-        ~ThreadProviderImpl()
-        {
-            stopAll();
-        }
-
-        void init()
-        {
-            // 初始化逻辑
-            _inited = true;
-        }
-
-        void destroy()
-        {
-            // 销毁逻辑
-            _destroy = true;
-        }
-
-        void create(const std::list<std::string> &threadNames)
-        {
-            for (const auto &name : threadNames)
-            {
-                std::unique_ptr<rtc::Thread> rawThread = rtc::Thread::Create(); // 使用 Create 方法创建线程
-                rawThread->Start();
-                _threadsMap[name] = std::shared_ptr<rtc::Thread>(rawThread.release(), [](rtc::Thread *t)
-                                                                 { t->Stop(); delete t; }); // 使用自定义删除器
-            }
-        }
-
-        rtc::Thread *thread(const std::string &name)
-        {
-            auto it = _threadsMap.find(name);
-            if (it != _threadsMap.end())
-            {
-                return it->second.get();
-            }
-            return nullptr;
-        }
-
-        void stopAll()
-        {
-            for (auto &pair : _threadsMap)
-            {
-                pair.second->Stop();
-            }
-            _threadsMap.clear();
-        }
-
-    private:
-        std::unordered_map<std::string, std::shared_ptr<rtc::Thread>> _threadsMap;
-        std::mutex _mutex;
-        rtc::Thread *_mainThread;
-        std::atomic_bool _inited;
-        std::atomic_bool _destroy;
-    };
-
-    ThreadProvider::ThreadProvider() : _impl(std::make_unique<ThreadProviderImpl>()) {}
-
-    ThreadProvider::~ThreadProvider() {}
-
-    void ThreadProvider::init()
-    {
-        _impl->init();
-    }
-
-    void ThreadProvider::destroy()
-    {
-        _impl->destroy();
-    }
-
-    void ThreadProvider::create(const std::list<std::string> &threadNames)
-    {
-        _impl->create(threadNames);
-    }
-
-    rtc::Thread *ThreadProvider::thread(const std::string &name)
-    {
-        return _impl->thread(name);
-    }
-
-    void ThreadProvider::stopAll()
-    {
-        _impl->stopAll();
-    }
-
+ThreadProvider::~ThreadProvider() {
+  DLOG("~ThreadProvider()");
+  if (!_destroy) {
+    stopAll();
+  }
 }
+
+void ThreadProvider::init() {
+  std::lock_guard<std::mutex> lock(_mutex);
+
+  _mainThread = rtc::ThreadManager::Instance()->CurrentThread();
+
+  _inited = true;
+}
+
+void ThreadProvider::destroy() { _destroy = true; }
+
+void ThreadProvider::create(const std::list<std::string> &threadNames) {
+  std::lock_guard<std::mutex> lock(_mutex);
+
+  if (!_inited) {
+    DLOG("_inited == false");
+    return;
+  }
+
+  for (const auto &name : threadNames) {
+    _threadsMap[name] = rtc::Thread::Create();
+    _threadsMap[name]->SetName(name, nullptr);
+    _threadsMap[name]->Start();
+  }
+}
+
+void ThreadProvider::stopAll() {
+  std::lock_guard<std::mutex> lock(_mutex);
+
+  for (const auto &thread : _threadsMap) {
+    thread.second->Stop();
+  }
+  _threadsMap.clear();
+
+  _destroy = true;
+}
+
+rtc::Thread *ThreadProvider::thread(const std::string &name) {
+  std::lock_guard<std::mutex> lock(_mutex);
+
+  if (name == "main") {
+    return _mainThread;
+  } else if (_threadsMap.find(name) != _threadsMap.end()) {
+    return _threadsMap[name].get();
+  }
+
+  return nullptr;
+}
+
+} // namespace vi

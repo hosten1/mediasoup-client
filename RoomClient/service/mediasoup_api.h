@@ -1,10 +1,20 @@
+/************************************************************************
+* @Copyright: 2021-2024
+* @FileName:
+* @Description: Open source mediasoup room client library
+* @Version: 1.0.0
+* @Author: Jackie Ou
+* @CreateTime: 2021-10-1
+*************************************************************************/
+
 #pragma once
 
 #include <memory>
+#include <unordered_map>
 #include "i_mediasoup_api.h"
 #include "component_factory.h"
 #include "signaling_client.h"
-#include "logger/u_logger.h"
+#include "logger/spd_logger.h"
 
 namespace vi {
 
@@ -23,7 +33,7 @@ public:
 
     void createWebRtcTransport(std::shared_ptr<signaling::CreateWebRtcTransportRequest> request, std::function<void(int32_t, const std::string&, std::shared_ptr<signaling::CreateWebRtcTransportResponse>)> callback) override;
 
-    void join(std::shared_ptr<signaling::JoinRequest> request, std::function<void(int32_t, const std::string&, std::shared_ptr<signaling::BasicResponse>)> callback) override;
+    void join(std::shared_ptr<signaling::JoinRequest> request, std::function<void(int32_t, const std::string&, std::shared_ptr<signaling::JoinResponse>)> callback) override;
 
     void connectWebRtcTransport(std::shared_ptr<signaling::ConnectWebRtcTransportRequest> request, std::function<void(int32_t, const std::string&, std::shared_ptr<signaling::BasicResponse>)> callback) override;
 

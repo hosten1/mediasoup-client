@@ -1,9 +1,18 @@
+/************************************************************************
+* @Copyright: 2021-2024
+* @FileName:
+* @Description: Open source mediasoup room client library
+* @Version: 1.0.0
+* @Author: Jackie Ou
+* @CreateTime: 2021-10-1
+*************************************************************************/
+
 #pragma once
 
 #include <memory>
 #include <vector>
 #include <functional>
-#include "logger/u_logger.h"
+#include "logger/spd_logger.h"
 #include "i_transport.h"
 #include "asio.hpp"
 
@@ -99,7 +108,7 @@ public:
     }
 
 private:
-    int32_t _id = -1;
+    int64_t _id = -1;
     std::string _text;
     std::vector<uint8_t> _data;
     ResolveCallback _resolve;

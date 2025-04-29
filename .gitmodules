@@ -7,12 +7,12 @@
 [submodule "deps/spdlog"]
 	path = deps/spdlog
 	url = https://github.com/gabime/spdlog.git
-[submodule "deps/libmediasoupclient"]
-	path = deps/libmediasoupclient
-	url = https://github.com/versatica/libmediasoupclient.git
 [submodule "deps/libsdptransform"]
 	path = deps/libsdptransform
-	url = https://github.com/ibc/libsdptransform.git
+url=https://github.com/ouxianghui/libsdptransform.git
 [submodule "deps/asio"]
 	path = deps/asio
 	url = https://github.com/chriskohlhoff/asio.git
+[submodule "deps/concurrentqueue"]
+	path = deps/concurrentqueue
+	url = https://github.com/cameron314/concurrentqueue.git

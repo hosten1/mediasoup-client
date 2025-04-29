@@ -38,12 +38,30 @@
 UI/UI.APS
 /*.pro.user
 
+/App/logs
+
 /Debug
 /Release
+
+/App/release
+/RoomClient/release
+
+/App/debug
+/RoomClient/debug
 
 /deps/webrtc
 .DS_Store
 *build-*
 RoomClient/build/*
 App/App.pro.user
-RoomClient/CMakeLists.txt.user
+RoomClient/CMakeLists.txt.use
+
+.qmake.stash
+/App/x64
+
+*.pro.user
+*.qtvscr
+*.vcxproj.user
+*.vcxproj.filters
+/build
+

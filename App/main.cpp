@@ -1,64 +1,53 @@
-#include "mainwindow.h"
-#include <QMetaType>
-#include <QApplication>
-#include "logger/u_logger.h"
-#include "app_delegate.h"
-#include "service/i_room_client_observer.h"
-#include "service/component_factory.h"
 #include "api/media_stream_interface.h"
-#include "promisedevice.h"
-// #include "rtc_base/physical_socket_server.h"
+#include "app_delegate.h"
+#include "logger/u_logger.h"
+#include "mainwindow.h"
+#include "mediasoupclient.hpp"
+#include "rtc_base/physical_socket_server.h"
+#include "service/i_room_client_observer.h"
+#include <QApplication>
+#include <QMetaType>
 #include <QOpenGLFunctions>
 
-static void registerMetaTypes()
-{
-    Permissions::requestCameraPermission([](bool granted) {
-            if (granted) {
-                qDebug() << "摄像头权限已授予";
-            } else {
-                qDebug() << "用户拒绝了摄像头权限";
-            }
-        });
-    Permissions::requestMicrophonePermission([](bool granted) {
-            if (granted) {
-                qDebug() << "mic权限已授予";
-            } else {
-                qDebug() << "用户拒绝了mic权限";
-            }
-        });
-    qRegisterMetaType<vi::RoomState>("vi::RoomState");
-    qRegisterMetaType<webrtc::MediaStreamTrackInterface *>("webrtc::MediaStreamTrackInterface* track");
-    qRegisterMetaType<const webrtc::VideoFrame &>("const webrtc::VideoFrame&");
+static void registerMetaTypes() {
+  qRegisterMetaType<vi::RoomState>("vi::RoomState");
+  qRegisterMetaType<rtc::scoped_refptr<webrtc::MediaStreamTrackInterface>>(
+      "rtc::scoped_refptr<webrtc::MediaStreamTrackInterface>");
+  qRegisterMetaType<std::shared_ptr<vi::IParticipant>>(
+      "std::shared_ptr<vi::IParticipant>");
+  qRegisterMetaType<webrtc::VideoFrame *>("const webrtc::VideoFrame*");
 }
 
-int main(int argc, char *argv[])
-{
-    registerMetaTypes();
+int main(int argc, char *argv[]) {
+  registerMetaTypes();
 
-    //    rtc::PhysicalSocketServer ss;
-    //    rtc::AutoSocketServerThread main_thread(&ss);
+  rtc::PhysicalSocketServer ss;
+  rtc::AutoSocketServerThread main_thread(&ss);
 
-    vi::ULogger::init();
-    AppDSI->init();
-    vi::ComponentFactory::initLibMediasoup();
+  vi::ULogger::init();
+  AppDelegate::sharedInstance()->init();
+  mediasoupclient::Initialize();
 
-    QApplication a(argc, argv);
+  DLOG("mediasoupclient version: {}", mediasoupclient::Version().c_str());
 
-    QSurfaceFormat format;
-    format.setDepthBufferSize(24);
-    format.setStencilBufferSize(8);
-    format.setVersion(4, 1);
-    format.setProfile(QSurfaceFormat::CoreProfile);
-    QSurfaceFormat::setDefaultFormat(format);
+  QApplication a(argc, argv);
 
-    MainWindow w;
-    w.init();
-    w.show();
-    int ret = a.exec();
+  QSurfaceFormat format;
+  format.setDepthBufferSize(24);
+  format.setStencilBufferSize(8);
+  format.setVersion(4, 1);
+  format.setProfile(QSurfaceFormat::CoreProfile);
+  QSurfaceFormat::setDefaultFormat(format);
 
-    vi::ComponentFactory::CleanupLibMediasoup();
-    AppDSI->destroy();
-    vi::ULogger::destroy();
+  MainWindow w;
+  w.init();
+  w.show();
+  int ret = a.exec();
 
-    return ret;
+  mediasoupclient::Cleanup();
+  AppDelegate::sharedInstance()->destroy();
+  vi::ULogger::destroy();
+
+  return ret;
+  // return 0;
 }

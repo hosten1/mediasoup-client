@@ -1,9 +1,19 @@
+/************************************************************************
+* @Copyright: 2021-2024
+* @FileName:
+* @Description: Open source mediasoup room client library
+* @Version: 1.0.0
+* @Author: Jackie Ou
+* @CreateTime: 2021-10-1
+*************************************************************************/
+
 #pragma once
 
 #include <random>
 #include <limits>
 #include "json/jsonable.hpp"
 #include "absl/types/optional.h"
+#include "json.hpp"
 
 namespace {
 
@@ -72,7 +82,7 @@ struct GetRouterRtpCapabilitiesResponse {
         absl::optional<int32_t> packetizationMode;
         absl::optional<std::string> profileLevelId;
         absl::optional<int32_t> xGoogleStartBitrate;
-        FIELDS_MAP("apt", apt, "level-asymmetry-allowed", levelAsymmetryAllowed, "packetization-mode", packetizationMode, "profile-level-id:", profileLevelId, "x-google-start-bitrate", xGoogleStartBitrate);
+        FIELDS_MAP("apt", apt, "level-asymmetry-allowed", levelAsymmetryAllowed, "packetization-mode", packetizationMode, "profile-level-id", profileLevelId, "x-google-start-bitrate", xGoogleStartBitrate);
     };
 
     struct Codec {
@@ -152,10 +162,10 @@ struct CreateWebRtcTransportResponse {
         absl::optional<std::string> type;
         absl::optional<std::string> protocol;
         absl::optional<std::string> foundation;
-        absl::optional<std::string> ip;
+        absl::optional<std::string> address;
         absl::optional<int32_t> port;
         absl::optional<int32_t> priority;
-        FIELDS_MAP("type", type, "protocol", protocol, "foundation", foundation, "ip", ip, "port", port, "priority", priority);
+        FIELDS_MAP("type", type, "protocol", protocol, "foundation", foundation, "address", address, "port", port, "priority", priority);
     };
 
     struct ICEParameters {
@@ -215,7 +225,7 @@ struct JoinRequest {
         absl::optional<int32_t> minptime;
         absl::optional<int32_t> useinbandfec;
         absl::optional<int32_t> profileId;
-        FIELDS_MAP("level-asymmetry-allowed", levelAsymmetryAllowed, "packetization-mode", packetizationMode, "profile-level-id:", profileLevelId, "x-google-start-bitrate", xGoogleStartBitrate, "minptime", minptime, "useinbandfec", useinbandfec, "profile-id", profileId);
+        FIELDS_MAP("level-asymmetry-allowed", levelAsymmetryAllowed, "packetization-mode", packetizationMode, "profile-level-id", profileLevelId, "x-google-start-bitrate", xGoogleStartBitrate, "minptime", minptime, "useinbandfec", useinbandfec, "profile-id", profileId);
     };
 
     struct Codec {
@@ -268,6 +278,33 @@ struct JoinRequest {
     absl::optional<std::string> method = "join";
     absl::optional<Data> data;
     FIELDS_MAP("request", request, "id", id, "method", method, "data", data);
+};
+
+struct JoinResponse {
+    struct Device {
+        absl::optional<std::string> flag;
+        absl::optional<std::string> name;
+        absl::optional<std::string> version;
+        FIELDS_MAP("flag", flag, "name", name, "version", version);
+    };
+
+    struct Peer {
+        absl::optional<std::string> id;
+        absl::optional<std::string> displayName;
+        absl::optional<Device> device;
+        FIELDS_MAP("id", id, "displayName", displayName, "device", device);
+    };
+
+    struct Data {
+        absl::optional<std::vector<Peer>> peers;
+        FIELDS_MAP("peers", peers);
+    };
+
+    absl::optional<bool> response;
+    absl::optional<int64_t> id;
+    absl::optional<bool> ok;
+    absl::optional<Data> data;
+    FIELDS_MAP("response", response, "id", id, "ok", ok, "data", data);
 };
 
 struct NewDataConsumerRequest {
@@ -392,6 +429,13 @@ struct ConnectWebRtcTransportRequest {
         FIELDS_MAP("algorithm", algorithm, "value", value);
     };
 
+    struct ICEParameters {
+        absl::optional<bool> iceLite;
+        absl::optional<std::string> password;
+        absl::optional<std::string> usernameFragment;
+        FIELDS_MAP("iceLite", iceLite, "password", password, "usernameFragment", usernameFragment);
+    };
+
     struct DTLSParameters {
         absl::optional<std::vector<Fingerprint>> fingerprints;
         absl::optional<std::string> role;
@@ -400,8 +444,9 @@ struct ConnectWebRtcTransportRequest {
 
     struct Data {
         absl::optional<std::string> transportId;
+        absl::optional<ICEParameters> iceParameters;
         absl::optional<DTLSParameters> dtlsParameters;
-        FIELDS_MAP("transportId", transportId, "dtlsParameters", dtlsParameters);
+        FIELDS_MAP("transportId", transportId, "iceParameters", iceParameters, "dtlsParameters", dtlsParameters);
     };
 
     absl::optional<bool> request = true;
@@ -412,9 +457,16 @@ struct ConnectWebRtcTransportRequest {
 };
 
 struct ProduceRequest {
+    struct SharingData {
+        // type: screen, windows, camera
+        absl::optional<std::string> type;
+        FIELDS_MAP("type", type);
+    };
+
     struct AppData {
         absl::optional<std::string> peerId;
-        FIELDS_MAP("peerId", peerId);
+        absl::optional<SharingData> sharing;
+        FIELDS_MAP("peerId", peerId, "sharing", sharing);
     };
 
     struct RTCPFeedback {
@@ -637,7 +689,7 @@ struct SetConsumerPreferredLayersRequest {
     absl::optional<bool> request = true;
     absl::optional<int64_t> id = generateID();
 
-    absl::optional<std::string> method = "setConsumerPriority";
+    absl::optional<std::string> method = "setConsumerPreferredLayers";
     absl::optional<Data> data;
     FIELDS_MAP("request", request, "id", id, "method", method, "data", data);
 };
@@ -1162,5 +1214,22 @@ struct PeerClosedNotification {
     absl::optional<Data> data;
     FIELDS_MAP("notification", notification, "method", method, "data", data);
 };
+
+struct Sharing {
+    // type: screen, windows, camera
+    std::string type;
+};
+
+void to_json(nlohmann::json& j, const Sharing& st);
+
+void from_json(const nlohmann::json& j, Sharing& st);
+
+struct SharingAppData {
+    Sharing sharing;
+};
+
+void to_json(nlohmann::json& j, const SharingAppData& st);
+
+void from_json(const nlohmann::json& j, SharingAppData& st);
 
 }

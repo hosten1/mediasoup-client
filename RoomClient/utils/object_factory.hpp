@@ -5,80 +5,66 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
-#include "rtc_base/deprecated/recursive_critical_section.h"
 
-namespace vi
-{
-    class IRcvProvider;
+namespace vi {
+class IRcvProvider;
 
-    template <typename T>
-    class ObjectFactory
+template <typename T> class ObjectFactory {
+public:
+  void initObjects() {
+    rtc::CritScope scope(&_criticalSection);
+    for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
+      auto object = iter->second;
+      if (object) {
+        object->init();
+      }
+    }
+  }
+
+  void destroyObjects() {
+    rtc::CritScope scope(&_criticalSection);
+    for (auto iter = _objects.begin(); iter != _objects.end(); ++iter) {
+      auto object = iter->second;
+      if (object) {
+        object->destroy();
+      }
+    }
+    _objects.clear();
+  }
+
+  void registerObject(const std::string &key,
+                      const std::shared_ptr<T> &object) {
+    rtc::CritScope scope(&_criticalSection);
+    _objects[key] = object;
+  }
+
+  void unregisterObject(const std::string &key) {
+    rtc::CritScope scope(&_criticalSection);
+    auto it = _objects.find(key);
+    if (it != _objects.end()) {
+      _objects.erase(key);
+    }
+  }
+
+  std::shared_ptr<T> getObject(const std::string &key) {
+    decltype(_objects) objects;
     {
-    public:
-        void initObjects()
-        {
-            rtc::CritScope scope(&_criticalSection);
-            for (auto iter = _objects.begin(); iter != _objects.end(); ++iter)
-            {
-                auto object = iter->second;
-                if (object)
-                {
-                    object->init();
-                }
-            }
-        }
+      rtc::CritScope scope(&_criticalSection);
+      objects = _objects;
+    }
 
-        void destroyObjects()
-        {
-            rtc::CritScope scope(&_criticalSection);
-            for (auto iter = _objects.begin(); iter != _objects.end(); ++iter)
-            {
-                auto object = iter->second;
-                if (object)
-                {
-                    object->destroy();
-                }
-            }
-            _objects.clear();
-        }
+    auto it = objects.find(key);
+    if (objects.end() != it) {
+      return it->second;
+    }
 
-        void registerObject(const std::string &key, const std::shared_ptr<T> &object)
-        {
-            rtc::CritScope scope(&_criticalSection);
-            _objects[key] = object;
-        }
+    return nullptr;
+  }
 
-        void unregisterObject(const std::string &key)
-        {
-            rtc::CritScope scope(&_criticalSection);
-            auto it = _objects.find(key);
-            if (it != _objects.end())
-            {
-                _objects.erase(key);
-            }
-        }
+private:
+  rtc::RecursiveCriticalSection _criticalSection;
 
-        std::shared_ptr<T> getObject(const std::string &key)
-        {
-            decltype(_objects) objects;
-            {
-                rtc::CritScope scope(&_criticalSection);
-                objects = _objects;
-            }
-
-            auto it = objects.find(key);
-            if (objects.end() != it)
-            {
-                return it->second;
-            }
-
-            return nullptr;
-        }
-
-    private:
-        rtc::RecursiveCriticalSection _criticalSection;
-
-        std::unordered_map<std::string, std::shared_ptr<T>> _objects;
-    };
-}
+  std::unordered_map<std::string, std::shared_ptr<T>> _objects;
+};
+} // namespace vi
 #endif //! ROOMCLIENT_UTILS_OBJECT_PROVIDER_H_

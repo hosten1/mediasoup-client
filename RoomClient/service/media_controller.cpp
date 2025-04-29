@@ -1,3 +1,12 @@
+/************************************************************************
+ * @Copyright: 2021-2024
+ * @FileName:
+ * @Description: Open source mediasoup room client library
+ * @Version: 1.0.0
+ * @Author: Jackie Ou
+ * @CreateTime: 2021-10-1
+ *************************************************************************/
+
 #include "media_controller.h"
 #include "Transport.hpp"
 #include "api/peer_connection_interface.h"
@@ -5,15 +14,18 @@
 #include "logger/u_logger.h"
 #include "mac_capturer.h"
 #include "mediasoup_api.h"
-#include <utility> // 添加在文件顶部
+#include <future>
 
 namespace vi {
 
 MediaController::MediaController(
     std::shared_ptr<IMediasoupApi> &mediasoupApi,
+    std::shared_ptr<mediasoupclient::SendTransport> &sendTransport,
+    std::shared_ptr<mediasoupclient::RecvTransport> &recvTransport,
     rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> &pcf,
     std::shared_ptr<Options> &options)
-    : _mediasoupApi(mediasoupApi), _peerConnectionFactory(pcf),
+    : _mediasoupApi(mediasoupApi), _sendTransport(sendTransport),
+      _recvTransport(recvTransport), _peerConnectionFactory(pcf),
       _options(options) {}
 
 MediaController::~MediaController() { DLOG("~MediaController()"); }
@@ -46,6 +58,7 @@ void MediaController::destroy() {
   }
 
   if (_capturerSource) {
+    _capturerSource->Stop();
     _capturerSource = nullptr;
   }
 }
@@ -226,10 +239,8 @@ void MediaController::enableVideo(bool enabled) {
     if (!_capturerSource) {
       std::unique_ptr<MacCapturer> capturer =
           absl::WrapUnique(MacCapturer::Create(1280, 720, 30, 0));
-      // _capturerSource =
-      // rtc::scoped_refptr<MacTrackSource>(std::move(capturer), false);
-
-      _capturerSource = MacTrackSource::Create(std::move(capturer), false);
+      _capturerSource =
+          rtc::make_ref_counted<MacTrackSource>(std::move(capturer), false);
     }
 
     DLOG("create capture source");
@@ -289,7 +300,7 @@ void MediaController::enableVideo(bool enabled) {
             DLOG("response is null or response->ok == false");
             return;
           }
-          TMgr->thread("mediasoup-client")->PostTask(RTC_FROM_HERE, [wself]() {
+          TMgr->thread("mediasoup-client")->PostTask([wself]() {
             auto self = wself.lock();
             if (!self) {
               DLOG("RoomClient is null");
@@ -299,15 +310,6 @@ void MediaController::enableVideo(bool enabled) {
           });
         });
   }
-}
-
-void MediaController::setSendTransport(
-    std::shared_ptr<mediasoupclient::SendTransport> transport) {
-  _sendTransport = transport;
-}
-void MediaController::setRecvTransport(
-    std::shared_ptr<mediasoupclient::RecvTransport> transport) {
-  _recvTransport = transport;
 }
 
 void MediaController::onCamProducerClosed() {
@@ -535,7 +537,7 @@ void MediaController::onClosed() {}
 void MediaController::onNewConsumer(
     std::shared_ptr<signaling::NewConsumerRequest> request) {
   TMgr->thread("mediasoup-client")
-      ->PostTask(RTC_FROM_HERE, [wself = weak_from_this(), request]() {
+      ->PostTask([wself = weak_from_this(), request]() {
         auto self = wself.lock();
         if (!self) {
           DLOG("RoomClient is null");
@@ -548,7 +550,7 @@ void MediaController::onNewConsumer(
 void MediaController::onNewDataConsumer(
     std::shared_ptr<signaling::NewDataConsumerRequest> request) {
   TMgr->thread("mediasoup-client")
-      ->PostTask(RTC_FROM_HERE, [wself = weak_from_this(), request]() {
+      ->PostTask([wself = weak_from_this(), request]() {
         auto self = wself.lock();
         if (!self) {
           DLOG("RoomClient is null");

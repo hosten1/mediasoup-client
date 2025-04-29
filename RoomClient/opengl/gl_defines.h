@@ -1,11 +1,22 @@
+/************************************************************************
+* @Copyright: 2021-2024
+* @FileName:
+* @Description: Open source mediasoup room client library
+* @Version: 1.0.0
+* @Author: Jackie Ou
+* @CreateTime: 2021-10-1
+*************************************************************************/
+
 #pragma once
 
-#ifdef WEBRTC_MAC
-#include <OpenGL/gl.h>
-#else
-#include <GL/gl.h>
+#if TARGET_OS_IPHONE
+#include <OpenGLES/ES3/gl.h>
+#elif TARGET_OS_MAC
+#include <OpenGL/gl3.h>
+#elif WIN32
+#include <GL/glew.h>
 #endif
-
+#include <OpenGL/gl3.h>
 #if TARGET_OS_IPHONE
 #define RTC_PIXEL_FORMAT GL_LUMINANCE
 #define SHADER_VERSION

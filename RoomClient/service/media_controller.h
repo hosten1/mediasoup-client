@@ -11,11 +11,16 @@
 #include "options.h"
 #include "signaling_models.h"
 #include "utils/universal_observable.hpp"
-#include <memory>
+
+namespace mediasoupclient {
+class SendTransport;
+class RecvTransport;
+} // namespace mediasoupclient
 
 namespace vi {
 
 class IMediasoupApi;
+class WindowsCapturerTrackSource;
 class MacTrackSource;
 
 class MediaController : public IMediaController,
@@ -29,6 +34,8 @@ class MediaController : public IMediaController,
 public:
   MediaController(
       std::shared_ptr<IMediasoupApi> &mediasoupApi,
+      std::shared_ptr<mediasoupclient::SendTransport> &sendTransport,
+      std::shared_ptr<mediasoupclient::RecvTransport> &recvTransport,
       rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> &pcf,
       std::shared_ptr<Options> &options);
 
@@ -58,12 +65,6 @@ public:
   void muteAudio(const std::string &id, bool muted) override;
 
   bool isAudioMuted(const std::string &id) override;
-
-  void setSendTransport(
-      std::shared_ptr<mediasoupclient::SendTransport> transport) override;
-
-  void setRecvTransport(
-      std::shared_ptr<mediasoupclient::RecvTransport> transport) override;
 
 protected:
   // Producer::Listener
@@ -163,8 +164,8 @@ private:
 private:
   std::shared_ptr<IMediasoupApi> &_mediasoupApi;
 
-  std::shared_ptr<mediasoupclient::SendTransport> _sendTransport;
-  std::shared_ptr<mediasoupclient::RecvTransport> _recvTransport;
+  std::shared_ptr<mediasoupclient::SendTransport> &_sendTransport;
+  std::shared_ptr<mediasoupclient::RecvTransport> &_recvTransport;
 
   rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface>
       &_peerConnectionFactory;

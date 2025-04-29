@@ -1,68 +1,47 @@
-﻿#include "service/component_factory.h"
+﻿#include "component_factory.h"
+#include "service/room_client.h"
 #include "service_factory.hpp"
 #include "utils/thread_provider.h"
-#include "service/room_client.h"
 
-namespace vi
-{
+namespace vi {
 
-    ComponentFactory::ComponentFactory()
-    {
-    }
+ComponentFactory::ComponentFactory() {}
 
-    ComponentFactory::~ComponentFactory()
-    {
-    }
-    std::string ComponentFactory::initLibMediasoup()
-    {
+ComponentFactory::~ComponentFactory() {}
 
-        return RoomClient::initLibMediasoup();
-    }
-    void ComponentFactory::CleanupLibMediasoup()
-    {
-        RoomClient::CleanupLibMediasoup();
-    }
-    void ComponentFactory::init()
-    {
-        TMgr->init();
-        TMgr->create({"signaling-transport", "mediasoup-client", "capture-session"});
-        _threadProvider = TMgr;
+void ComponentFactory::init() {
+  TMgr->init();
+  TMgr->create({"signaling-transport", "mediasoup-client", "capture-session"});
+  _threadProvider = TMgr;
 
-        if (!_serviceFactory)
-        {
-            _serviceFactory = std::make_shared<ServiceFactory>(weak_from_this());
-            _serviceFactory->init();
-        }
+  if (!_serviceFactory) {
+    _serviceFactory = std::make_shared<ServiceFactory>(weak_from_this());
+    _serviceFactory->init();
+  }
 
-        if (!_roomClient)
-        {
-            auto RoomClientImpl = std::make_shared<RoomClient>(weak_from_this());
-            _roomClient = IRoomClientProxy::create(RoomClientImpl, "mediasoup-client");
-            _roomClient->init();
-        }
-    }
-
-    void ComponentFactory::destroy()
-    {
-        if (_serviceFactory)
-        {
-            _serviceFactory->destroy();
-        }
-
-        if (_roomClient)
-        {
-            _roomClient->destroy();
-        }
-    }
-
-    std::shared_ptr<vi::IServiceFactory> ComponentFactory::getServiceFactory()
-    {
-        return _serviceFactory;
-    }
-
-    std::shared_ptr<IRoomClient> ComponentFactory::getRoomClient()
-    {
-        return _roomClient;
-    }
-
+  if (!_roomClient) {
+    auto RoomClientImpl = std::make_shared<RoomClient>(weak_from_this());
+    _roomClient = RoomClientProxy::create(RoomClientImpl, "mediasoup-client");
+    _roomClient->init();
+  }
 }
+
+void ComponentFactory::destroy() {
+  if (_serviceFactory) {
+    _serviceFactory->destroy();
+  }
+
+  if (_roomClient) {
+    _roomClient->destroy();
+  }
+}
+
+std::shared_ptr<vi::IServiceFactory> ComponentFactory::getServiceFactory() {
+  return _serviceFactory;
+}
+
+std::shared_ptr<IRoomClient> ComponentFactory::getRoomClient() {
+  return _roomClient;
+}
+
+} // namespace vi

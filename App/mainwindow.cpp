@@ -2,16 +2,19 @@
 #include "app_delegate.h"
 #include "gallery_view.h"
 #include "logger/u_logger.h"
-#include "mac_video_renderer.h"
 #include "media_event_adapter.h"
 #include "participant_event_adapter.h"
+#include "participant_list_view.h"
 #include "room_event_adapter.h"
+#include "service/component_factory.h"
 #include "service/i_media_controller.h"
 #include "service/i_participant_controller.h"
+#include "service/participant.h"
 #include "service/room_client.h"
 #include "service/signaling_client.h"
 #include "service/signaling_models.h"
 #include "ui_mainwindow.h"
+#include "utils/thread_provider.h"
 #include "video_renderer.h"
 #include "websocket/websocket_request.h"
 
@@ -68,7 +71,7 @@ void MainWindow::destroy() {
 }
 
 void MainWindow::onRoomStateChanged(vi::RoomState state) {
- if (state == vi::RoomState::CONNECTED) {
+  if (state == vi::RoomState::CONNECTED) {
     RClient->getMediaController()->enableAudio(true);
     RClient->getMediaController()->enableVideo(true);
   }
@@ -102,18 +105,14 @@ void MainWindow::onVideoTrackRemoved(const std::string &id,
 }
 
 void MainWindow::on_actionJoin_triggered() {
-  RClient->join("43.134.4.247", 4443, "123456", "jackie", nullptr);
+  RClient->join("192.168.64.3", 4443, "test-room", "jackie", nullptr);
 }
 
 void MainWindow::on_actionleave_triggered() {}
 
-void MainWindow::on_actionEnbaleMicrophone_triggered() {
-  RClient->getMediaController()->enableAudio(true);
-}
+void MainWindow::on_actionEnbaleMicrophone_triggered() {}
 
-void MainWindow::on_actionDisableMicrophone_triggered() {
-  RClient->getMediaController()->enableAudio(false);
-}
+void MainWindow::on_actionDisableMicrophone_triggered() {}
 
 void MainWindow::on_actionMuteMicrophone_triggered() {}
 

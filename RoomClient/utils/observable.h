@@ -1,10 +1,13 @@
-﻿/**
- * This file is part of mediasoup_client project.
- * Author:    Jackie Ou
- * Created:   2021-11-01
- **/
+/************************************************************************
+* @Copyright: 2021-2024
+* @FileName:
+* @Description: Open source mediasoup room client library
+* @Version: 1.0.0
+* @Author: Jackie Ou
+* @CreateTime: 2021-10-1
+*************************************************************************/
 
-#pragma once
+﻿#pragma once
 
 #include <memory>
 #include <functional>
@@ -22,7 +25,7 @@ public:
 
 protected:
     template<class T>
-    void addBizObserver(std::vector<weak_ptr<T>> &observers, weak_ptr<T> observer)
+    void addObserver(std::vector<weak_ptr<T>> &observers, weak_ptr<T> observer)
     {
         auto lObserver = observer.lock();
         if(lObserver) {
@@ -30,7 +33,7 @@ protected:
         }
     }
 
-    template<class T> void removeBizObserver(std::vector<weak_ptr<T>> &observers, weak_ptr<T> observer)
+    template<class T> void removeObserver(std::vector<weak_ptr<T>> &observers, weak_ptr<T> observer)
     {
         typename std::vector<weak_ptr<T>>::iterator iter = observers.begin();
         auto lockObserver = observer.lock();
@@ -54,7 +57,7 @@ protected:
     }
 
     template<class T>
-    void removeInvalidObserver(std::vector<std::weak_ptr<T>> &observers)
+    void removeInvalid(std::vector<std::weak_ptr<T>> &observers)
     {
         observers.erase( std::remove_if(observers.begin(), observers.end(), [](const std::weak_ptr<T>& observer) {
                                             return observer.expired();
@@ -62,7 +65,7 @@ protected:
     }
 
     template<class T>
-    void notifyObserver4Change(std::vector<std::weak_ptr<T>> &observers, std::function<void(std::shared_ptr<T>& ot)> func)
+    void notify(std::vector<std::weak_ptr<T>> &observers, std::function<void(std::shared_ptr<T>& ot)> func)
     {
         removeInvalidObserver(observers);
         auto copiedObservers = observers;
